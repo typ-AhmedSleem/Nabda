@@ -63,6 +63,7 @@ dependencies {
     // Core (if needed directly, otherwise transitive)
     implementation(project(":core:common"))
     implementation(project(":core:model"))
+    implementation(project(":core:dispatcher"))
     implementation(project(":core:notifications"))
 
     testImplementation(libs.junit)

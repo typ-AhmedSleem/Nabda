@@ -25,4 +25,5 @@ dependencies {
     implementation(project(":core:actions"))
     implementation(project(":core:pairing"))
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.koin.android)
 }
