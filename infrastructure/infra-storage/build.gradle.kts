@@ -22,6 +22,9 @@ dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:common"))
     implementation(project(":core:pairing"))
+    implementation(project(":core:messaging"))
+
+    implementation(libs.koin.android)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.datastore.preferences)
     

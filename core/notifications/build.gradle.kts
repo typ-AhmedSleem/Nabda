@@ -19,7 +19,8 @@ android {
 }
 
 dependencies {
-     implementation(project(":core:model"))
-     implementation(project(":core:common"))
-     implementation(libs.androidx.core.ktx)
+    implementation(project(":core:model"))
+    implementation(project(":core:common"))
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.koin.android)
 }

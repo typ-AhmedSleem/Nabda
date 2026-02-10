@@ -22,8 +22,10 @@ dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:common"))
     implementation(project(":core:messaging"))
+    implementation(project(":core:notifications"))
+
+    implementation(libs.koin.android)
     implementation(libs.kotlinx.coroutines.android)
-    
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
 
