@@ -10,7 +10,11 @@ class NabdaApplication : Application() {
 
         startKoin {
             androidContext(this@NabdaApplication)
-            // modules() // Will add modules later
+            modules(
+                com.typ.nabda.core.notifications.di.notificationsModule,
+                com.typ.nabda.infrastructure.storage.di.storageModule,
+                com.typ.nabda.infrastructure.fcm.di.fcmModule
+            )
         }
     }
 }
