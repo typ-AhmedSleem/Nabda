@@ -15,6 +15,7 @@ kotlinxCoroutines = "1.10.2"
 androidx-work = "2.11.0"
 androidx-lifecycle = "2.9.6"
 firebaseBom = "34.9.0"
+datastore = "1.1.2"
 prettytime = "5.0.4.Final"
 
 [libraries]
@@ -33,6 +34,7 @@ androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "u
 androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
 # Koin
