@@ -23,5 +23,6 @@ dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:messaging"))
     implementation(project(":core:actions"))
+    implementation(project(":core:pairing"))
     implementation(libs.kotlinx.coroutines.android)
 }
