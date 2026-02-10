@@ -47,6 +47,22 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    
+    // Koin
+    implementation(libs.koin.android)
+    implementation(libs.koin.compose)
+
+    // Modules
+    implementation(project(":feature:deafblind"))
+    implementation(project(":feature:caregiver"))
+    implementation(project(":feature:pairing"))
+    implementation(project(":infrastructure:infra-fcm"))
+    implementation(project(":infrastructure:infra-storage"))
+    implementation(project(":infrastructure:infra-qr"))
+    // Core (if needed directly, otherwise transitive)
+    implementation(project(":core:common"))
+    implementation(project(":core:model"))
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
