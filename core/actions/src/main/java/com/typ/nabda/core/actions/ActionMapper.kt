@@ -13,9 +13,9 @@ object ActionMapper {
             description = "User is requesting food",
             priority = ActionPriority.NORMAL
         ),
-        GestureType.TWO_FINGER_SWIPE_DOWN to Action(
+        GestureType.ONE_FINGER_SWIPE_DOWN to Action(
             id = "WATER_REQUEST",
-            name = "Water Request",
+            name = "عاوز اشرب",
             description = "User is requesting water",
             priority = ActionPriority.NORMAL
         ),
@@ -25,9 +25,9 @@ object ActionMapper {
             description = "User needs to use the bathroom",
             priority = ActionPriority.NORMAL
         ),
-        GestureType.THREE_FINGER_SWIPE_UP to Action(
+        GestureType.ONE_FINGER_SWIPE_UP to Action(
             id = "NEED_HELP",
-            name = "Need Assistance",
+            name = "أحتاج إلى مساعدة",
             description = "User needs general assistance",
             priority = ActionPriority.ASSISTANCE
         ),
@@ -37,9 +37,9 @@ object ActionMapper {
             description = "User is experiencing pain",
             priority = ActionPriority.ASSISTANCE
         ),
-        GestureType.THREE_FINGER_SWIPE_LEFT to Action(
+        GestureType.ONE_FINGER_SWIPE_RIGHT to Action(
             id = "EMERGENCY_ALERT",
-            name = "EMERGENCY",
+            name = "حاله طادئه !",
             description = "Critical Emergency Alert",
             priority = ActionPriority.EMERGENCY
         )
