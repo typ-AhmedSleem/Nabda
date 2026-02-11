@@ -17,6 +17,7 @@ import java.util.UUID
 
 sealed class PairingUiState {
     object Loading : PairingUiState()
+    object PairingInProgress : PairingUiState()
     data class DisplayQr(val uuid: String, val qrBitmap: Bitmap?) : PairingUiState()
     data class Scanning(val isScanning: Boolean) : PairingUiState()
     data class Paired(val partnerUuid: String) : PairingUiState()
@@ -73,7 +74,7 @@ class PairingViewModel(
     fun onQrScanned(scannedUuid: String) {
         viewModelScope.launch {
             if (scannedUuid.length > 10) { // Basic UUID check
-                _uiState.value = PairingUiState.Loading
+                _uiState.value = PairingUiState.PairingInProgress
                 // Fetch Token
                 val token = withContext(Dispatchers.IO) {
                     tokenRepository.getRemoteToken(scannedUuid)
