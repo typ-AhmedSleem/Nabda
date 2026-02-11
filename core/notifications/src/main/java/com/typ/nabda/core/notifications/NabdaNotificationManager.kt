@@ -6,16 +6,10 @@ import android.content.Context
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.typ.nabda.core.model.ActionPriority
+import com.typ.nabda.core.model.Alert
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-
-data class Alert(
-    val actionId: String,
-    val actionName: String,
-    val priority: ActionPriority,
-    val timestamp: Long = System.currentTimeMillis(),
-)
 
 interface NabdaNotificationManager {
     fun showActionNotification(actionId: String, actionName: String, priority: String)
