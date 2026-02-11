@@ -5,6 +5,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.typ.nabda.feature.caregiver.CaregiverScreen
+import com.typ.nabda.feature.caregiver.onboarding.CaregiverHowToScreen
+import com.typ.nabda.feature.caregiver.onboarding.CaregiverPermissionsScreen
+import com.typ.nabda.feature.caregiver.onboarding.CaregiverWelcomeScreen
 import com.typ.nabda.feature.deafblind.DeafBlindScreen
 import com.typ.nabda.feature.pairing.PairingScreen
 
@@ -17,9 +20,31 @@ fun AppNavigation() {
             RoleSelectionScreen(
                 onRoleSelected = { isCaregiver ->
                     if (isCaregiver) {
-                        navController.navigate("pairing/caregiver")
+                        navController.navigate("caregiver_onboarding_welcome")
                     } else {
                         navController.navigate("pairing/deafblind")
+                    }
+                }
+            )
+        }
+
+        composable("caregiver_onboarding_welcome") {
+            CaregiverWelcomeScreen(
+                onGetStarted = { navController.navigate("caregiver_onboarding_permissions") }
+            )
+        }
+
+        composable("caregiver_onboarding_permissions") {
+            CaregiverPermissionsScreen(
+                onContinue = { navController.navigate("caregiver_onboarding_howto") }
+            )
+        }
+
+        composable("caregiver_onboarding_howto") {
+            CaregiverHowToScreen(
+                onScanQr = {
+                    navController.navigate("pairing/caregiver") {
+                        popUpTo("caregiver_onboarding_welcome") { inclusive = true }
                     }
                 }
             )
@@ -43,8 +68,6 @@ fun AppNavigation() {
                     }
                 }
             )
-            // Note: We might want to pass 'isCaregiver' to PairingScreen to set initial state
-            // But ParsingViewModel logic handles state. For demo, manually switching in UI is fine.
         }
 
         composable("caregiver_dashboard") {
