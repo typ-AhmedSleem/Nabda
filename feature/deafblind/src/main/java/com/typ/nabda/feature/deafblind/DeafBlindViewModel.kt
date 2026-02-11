@@ -1,5 +1,6 @@
 package com.typ.nabda.feature.deafblind
 
+import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.typ.nabda.core.actions.ActionMapper
@@ -16,8 +17,9 @@ import kotlinx.coroutines.launch
 
 data class DeafBlindUiState(
     val lastAction: Action? = null,
-    val feedbackMessage: String = "Ready for input",
+    val feedbackMessage: String = "Waiting for action...", // Updated default message
     val isSending: Boolean = false,
+    val pointers: Map<Int, Offset> = emptyMap(), // Track active pointers for visual feedback
 )
 
 class DeafBlindViewModel(
@@ -26,6 +28,10 @@ class DeafBlindViewModel(
 
     private val _uiState = MutableStateFlow(DeafBlindUiState())
     val uiState: StateFlow<DeafBlindUiState> = _uiState.asStateFlow()
+
+    fun onPointersChanged(pointers: Map<Int, Offset>) {
+        _uiState.value = _uiState.value.copy(pointers = pointers)
+    }
 
     fun onGestureInput(input: GestureInput) {
         val gesture = GestureClassifier.classify(input)
