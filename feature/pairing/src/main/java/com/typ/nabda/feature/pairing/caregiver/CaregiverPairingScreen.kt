@@ -1,7 +1,6 @@
 package com.typ.nabda.feature.pairing.caregiver
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,8 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.SettingsInputAntenna
@@ -24,6 +21,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.text.trimmedLength
 
 // Hardcoded Colors
 private val BackgroundColor = Color(0xFFFDF8E8)
@@ -126,15 +125,20 @@ fun CaregiverPairingScreen(
         Spacer(modifier = Modifier.height(48.dp))
 
         // Manual Entry
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(64.dp)
-                .border(1.dp, InputBorderColor, RoundedCornerShape(32.dp))
-                .padding(horizontal = 24.dp),
-            contentAlignment = Alignment.CenterStart
-        ) {
-            if (pairingCode.isEmpty()) {
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = pairingCode,
+            shape = MaterialTheme.shapes.large,
+            onValueChange = { pairingCode = it },
+            textStyle = TextStyle(
+                fontSize = 18.sp,
+                color = PrimaryTextColor
+            ),
+            singleLine = true,
+            label = {
+                Text("Pairing code")
+            },
+            placeholder = {
                 Text(
                     text = "Enter pairing code manually",
                     style = TextStyle(
@@ -142,18 +146,8 @@ fun CaregiverPairingScreen(
                         color = SecondaryTextColor
                     )
                 )
-            }
-            BasicTextField(
-                value = pairingCode,
-                onValueChange = { pairingCode = it },
-                modifier = Modifier.fillMaxWidth(),
-                textStyle = TextStyle(
-                    fontSize = 18.sp,
-                    color = PrimaryTextColor
-                ),
-                singleLine = true
-            )
-        }
+            },
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -164,8 +158,8 @@ fun CaregiverPairingScreen(
                 .fillMaxWidth()
                 .height(56.dp),
             colors = ButtonDefaults.buttonColors(containerColor = PairButtonColor),
-            shape = RoundedCornerShape(28.dp),
-            enabled = pairingCode.isNotBlank()
+            shape = MaterialTheme.shapes.large,
+            enabled = pairingCode.trimmedLength() >= 10
         ) {
             Text(
                 text = "Pair",
@@ -213,8 +207,7 @@ fun CaregiverPairingScreen(
                 .fillMaxWidth()
                 .height(64.dp),
             colors = ButtonDefaults.buttonColors(containerColor = QrButtonColor),
-            shape = RoundedCornerShape(32.dp),
-            elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+            shape = MaterialTheme.shapes.large,
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
