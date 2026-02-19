@@ -8,8 +8,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -39,12 +41,21 @@ fun DeafQrScreen(
 
         Spacer(modifier = Modifier.height(48.dp))
 
-        qrBitmap?.let { bitmap ->
-            Image(
-                bitmap = bitmap.asImageBitmap(),
-                contentDescription = "QR Code",
-                modifier = Modifier.fillMaxWidth(0.75f)
-            )
+        Surface(
+            tonalElevation = 4.dp,
+            shadowElevation = 0.dp,
+            shape = MaterialTheme.shapes.large,
+            modifier = Modifier
+                .fillMaxWidth(0.75f)
+                .heightIn(min = 200.dp)
+        ) {
+            qrBitmap?.let { bitmap ->
+                Image(
+                    bitmap = bitmap.asImageBitmap(),
+                    contentDescription = "QR Code",
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(48.dp))
