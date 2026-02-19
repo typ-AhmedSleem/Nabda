@@ -15,13 +15,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.UUID
 
-sealed class PairingUiState {
-    object Loading : PairingUiState()
-    object PairingInProgress : PairingUiState()
-    data class DisplayQr(val uuid: String, val qrBitmap: Bitmap?) : PairingUiState()
-    data class Scanning(val isScanning: Boolean) : PairingUiState()
-    data class Paired(val partnerUuid: String) : PairingUiState()
-    data class Error(val message: String) : PairingUiState()
+sealed interface PairingUiState {
+    data object Loading : PairingUiState
+    data object PairingInProgress : PairingUiState
+    data class DisplayQr(val uuid: String, val qrBitmap: Bitmap?) : PairingUiState
+    data object NeedsPairing : PairingUiState
+    data class Paired(val partnerUuid: String) : PairingUiState
+    data class Error(val message: String) : PairingUiState
 }
 
 
@@ -44,9 +44,9 @@ class PairingViewModel(
                 _uiState.value = PairingUiState.Paired(pairedDevice.uuid)
             } else {
                 if (isCaregiver) {
-                    generateMyIdentity()
+                    switchToScanning()
                 } else {
-                    _uiState.value = PairingUiState.Scanning(true)
+                    generateMyIdentity()
                 }
             }
         }
@@ -71,31 +71,37 @@ class PairingViewModel(
         }
     }
 
-    fun onQrScanned(scannedUuid: String) {
+    fun submitPairingCode(pairingCode: String) {
         viewModelScope.launch {
-            if (scannedUuid.length > 10) { // Basic UUID check
+            if (pairingCode.length > 10) { // Basic UUID check
                 _uiState.value = PairingUiState.PairingInProgress
                 // Fetch Token
                 val token = withContext(Dispatchers.IO) {
-                    tokenRepository.getRemoteToken(scannedUuid)
+                    tokenRepository.getRemoteToken(pairingCode)
                 }
 
                 if (token != null) {
-                    val device = PairedDevice(uuid = scannedUuid, fcmToken = token)
+                    val device = PairedDevice(uuid = pairingCode, fcmToken = token)
                     pairingRepository.setPairedDevice(device)
-                    _uiState.value = PairingUiState.Paired(scannedUuid)
+                    _uiState.value = PairingUiState.Paired(pairingCode)
                 } else {
                     _uiState.value = PairingUiState.Error("Could not find user. Make sure they are online.")
                 }
+            } else {
+                _uiState.value = PairingUiState.Error("Invalid Pairing Code")
             }
         }
     }
 
     fun switchToScanning() {
-        _uiState.value = PairingUiState.Scanning(true)
+        _uiState.value = PairingUiState.NeedsPairing
     }
 
     fun switchToDisplay() {
         generateMyIdentity()
+    }
+
+    fun switchToError(error: Exception) {
+        _uiState.value = PairingUiState.Error(error.message ?: "Unknown Error")
     }
 }
