@@ -1,27 +1,33 @@
 package com.typ.nabda.feature.pairing
 
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.typ.nabda.core.messaging.TokenRepository
 import com.typ.nabda.core.model.PairedDevice
 import com.typ.nabda.core.pairing.PairingRepository
-import com.typ.nabda.feature.pairing.deaf.DeafFailedScreen
+import com.typ.nabda.feature.pairing.caregiver.CaregiverPairedScreen
+import com.typ.nabda.feature.pairing.caregiver.CaregiverPairingInProgressScreen
+import com.typ.nabda.feature.pairing.caregiver.CaregiverPairingScreen
+import com.typ.nabda.feature.pairing.common.PairingFailureContent
 import com.typ.nabda.feature.pairing.deaf.DeafPairedScreen
+import com.typ.nabda.feature.pairing.deaf.DeafPairingScreen
 import com.typ.nabda.feature.pairing.deaf.DeafQrScreen
+import io.github.g00fy2.quickie.QRResult
+import io.github.g00fy2.quickie.ScanQRCode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import org.koin.compose.viewmodel.koinViewModel
@@ -34,32 +40,37 @@ fun PairingScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
 
-    androidx.compose.runtime.LaunchedEffect(isCaregiver) {
+    LaunchedEffect(isCaregiver) {
         viewModel.setRole(isCaregiver)
     }
 
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        when (val s = state) {
+        when (val pairingState = state) {
             is PairingUiState.Loading -> CircularProgressIndicator()
             is PairingUiState.PairingInProgress -> {
                 if (isCaregiver) {
-                    com.typ.nabda.feature.pairing.caregiver.CaregiverPairingInProgressScreen()
+                    CaregiverPairingInProgressScreen()
                 } else {
-                    com.typ.nabda.feature.pairing.deaf.DeafPairingScreen()
+                    DeafPairingScreen()
                 }
             }
 
             is PairingUiState.Error -> {
-                if (isCaregiver) {
-                    com.typ.nabda.feature.pairing.caregiver.CaregiverFailedScreen(onRetry = { viewModel.switchToScanning() })
-                } else {
-                    DeafFailedScreen(onRetry = { viewModel.switchToDisplay() })
-                }
+                PairingFailureContent(
+                    onRetry = {
+                        if (isCaregiver) {
+                            viewModel.switchToScanning()
+                        } else {
+                            viewModel.switchToDisplay()
+                        }
+                    },
+                    subtitle = pairingState.message
+                )
             }
 
             is PairingUiState.Paired -> {
                 if (isCaregiver) {
-                    com.typ.nabda.feature.pairing.caregiver.CaregiverPairedScreen(onFinish = onPairingComplete)
+                    CaregiverPairedScreen(onFinish = onPairingComplete)
                 } else {
                     DeafPairedScreen(onFinish = onPairingComplete)
                 }
@@ -67,32 +78,47 @@ fun PairingScreen(
 
             is PairingUiState.DisplayQr -> {
                 DeafQrScreen(
-                    uuid = s.uuid,
-                    qrBitmap = s.qrBitmap
+                    uuid = pairingState.uuid,
+                    qrBitmap = pairingState.qrBitmap
                 )
             }
 
-            is PairingUiState.Scanning -> {
-                if (isCaregiver) {
-                    com.typ.nabda.feature.pairing.caregiver.CaregiverPairingScreen(
-                        onPairManual = { viewModel.onQrScanned(it) },
-                        onPairUsingQr = { /* For now, just show camera if needed, or keep in this selection state */ }
-                    )
-                } else {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        if (!LocalView.current.isInEditMode) {
-                            CameraScreen(onCodeScanned = { viewModel.onQrScanned(it) })
+            is PairingUiState.NeedsPairing -> {
+                val ctx = LocalContext.current
+                val scanQrCodeLauncher = rememberLauncherForActivityResult(ScanQRCode()) { result ->
+                    when (result) {
+                        is QRResult.QRError -> {
+                            Log.w("QR", "QR Error", result.exception)
+                            viewModel.switchToError(result.exception)
                         }
-                        Button(
-                            onClick = { viewModel.switchToDisplay() },
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .padding(32.dp)
-                        ) {
-                            Text("Cancel Scanning")
+
+                        QRResult.QRMissingPermission -> {
+                            Log.w("QR", "QR Missing Permission")
+                            viewModel.switchToError(Exception("Missing Camera Permission"))
+                        }
+
+                        QRResult.QRUserCanceled -> {
+                            Log.w("QR", "QR User Canceled")
+                            viewModel.switchToError(Exception("User cancelled QR scanning."))
+                        }
+
+                        is QRResult.QRSuccess -> {
+                            val scannedContent = result.content.rawValue?.trim()
+                            Log.d("QR", "QR Success: $scannedContent")
+                            if (scannedContent == null) {
+                                Toast
+                                    .makeText(ctx, "Invalid QR Code.", Toast.LENGTH_SHORT)
+                                    .show()
+                            } else {
+                                viewModel.submitPairingCode(scannedContent)
+                            }
                         }
                     }
                 }
+                CaregiverPairingScreen(
+                    onPairManual = { viewModel.submitPairingCode(it) },
+                    onPairUsingQr = { scanQrCodeLauncher.launch(null) }
+                )
             }
         }
     }
