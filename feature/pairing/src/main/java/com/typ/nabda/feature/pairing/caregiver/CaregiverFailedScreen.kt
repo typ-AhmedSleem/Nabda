@@ -5,11 +5,12 @@ import com.typ.nabda.feature.pairing.common.PairingFailureContent
 
 @Composable
 fun CaregiverFailedScreen(
+    title: String = "Pairing failed",
     onRetry: () -> Unit,
 ) {
     PairingFailureContent(
         onRetry = onRetry,
-        title = "Pairing failed"
+        title = title
     )
 }
 

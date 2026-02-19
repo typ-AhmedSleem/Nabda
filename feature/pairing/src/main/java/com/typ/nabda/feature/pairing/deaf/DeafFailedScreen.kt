@@ -5,11 +5,16 @@ import com.typ.nabda.feature.pairing.common.PairingFailureContent
 
 @Composable
 fun DeafFailedScreen(
+    title: String = "Pairing failed",
+    subtitle: String = "Something went wrong during the connection process. Please ensure both devices are online and try again.",
+    buttonText: String = "Retry",
     onRetry: () -> Unit,
 ) {
     PairingFailureContent(
         onRetry = onRetry,
-        title = "Pairing failed"
+        title = title,
+        subtitle = subtitle,
+        buttonText = buttonText
     )
 }
 
