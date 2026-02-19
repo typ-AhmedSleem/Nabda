@@ -4,20 +4,22 @@ import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -34,37 +36,48 @@ fun DeafQrScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Scan this QR to pair",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
+            text = "Scan this QR on Caregiver app to pair or input it manually",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
         )
 
         Spacer(modifier = Modifier.height(48.dp))
 
-        Surface(
-            tonalElevation = 4.dp,
-            shadowElevation = 0.dp,
-            shape = MaterialTheme.shapes.large,
-            modifier = Modifier
-                .fillMaxWidth(0.75f)
-                .heightIn(min = 200.dp)
-        ) {
-            qrBitmap?.let { bitmap ->
-                Image(
-                    bitmap = bitmap.asImageBitmap(),
-                    contentDescription = "QR Code",
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
+        qrBitmap?.let { bitmap ->
+            Image(
+                bitmap = bitmap.asImageBitmap(),
+                contentDescription = "QR Code",
+                modifier = Modifier
+                    .fillMaxWidth(0.75f)
+                    .clip(MaterialTheme.shapes.large)
+            )
         }
 
         Spacer(modifier = Modifier.height(48.dp))
 
-        Text(
-            text = "Pair id: $uuid",
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.SemiBold
-        )
+        val deviceId = remember(uuid) {
+            uuid.split("-").lastOrNull() ?: uuid
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                maxLines = 1,
+                text = "Pair id: ",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+
+            Text(
+                maxLines = 1,
+                text = deviceId,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.titleLarge,
+            )
+        }
     }
 }
 
@@ -73,8 +86,8 @@ fun DeafQrScreen(
 fun DeafQrScreenPreview() {
     MaterialTheme {
         DeafQrScreen(
-            uuid = "1234-5678-9012",
-            qrBitmap = null // Showing without bitmap as Bitmap creation is platform-specific
+            uuid = "2561a-1ab2-90af241ab2",
+            qrBitmap = null
         )
     }
 }
