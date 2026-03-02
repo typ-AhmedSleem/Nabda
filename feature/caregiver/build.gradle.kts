@@ -25,6 +25,8 @@ android {
 dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:common"))
+    implementation(project(":core:pairing"))
+    implementation(project(":core:messaging"))
     implementation(project(":core:notifications"))
 
     implementation(platform(libs.androidx.compose.bom))
