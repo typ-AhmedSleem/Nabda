@@ -17,13 +17,17 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeOff
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.CellTower
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.SettingsInputAntenna
-import androidx.compose.material.icons.filled.VolumeOff
-import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.filled.Wifi
+import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -37,13 +41,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.typ.nabda.core.model.ConnectivitySource
 import org.koin.compose.viewmodel.koinViewModel
 
 // Hardcoded Colors for Consistency
-private val BackgroundColor = Color(0xFFFDF8E8)
+//private val BackgroundColor = Color(0xFFFDF8E8)
 private val PrimaryTextColor = Color(0xFF3C3228)
 private val SecondaryTextColor = Color(0xFF7A8499)
 private val CardBackgroundColor = Color.White
@@ -59,12 +65,14 @@ fun CaregiverScreen(
     val notifGranted by viewModel.isNotificationPermissionGranted.collectAsStateWithLifecycle()
     val cameraGranted by viewModel.isCameraPermissionGranted.collectAsStateWithLifecycle()
     val isSilent by viewModel.isPhoneSilent.collectAsStateWithLifecycle()
+    val telemetryState by viewModel.telemetryUiState.collectAsStateWithLifecycle()
 
     CaregiverDashboardContent(
         isConnected = isConnected,
         notifGranted = notifGranted,
         cameraGranted = cameraGranted,
-        isSilent = isSilent
+        isSilent = isSilent,
+        telemetryState = telemetryState
     )
 }
 
@@ -74,11 +82,12 @@ fun CaregiverDashboardContent(
     notifGranted: Boolean,
     cameraGranted: Boolean,
     isSilent: Boolean,
+    telemetryState: DeviceTelemetryUiState?,
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundColor)
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -98,6 +107,24 @@ fun CaregiverDashboardContent(
         SystemActiveCard(isConnected = isConnected)
 
         Spacer(modifier = Modifier.height(32.dp))
+
+        // Telemetry Section
+        if (telemetryState != null) {
+            Text(
+                text = "TRACKED DEVICE",
+                style = TextStyle(
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = SecondaryTextColor.copy(alpha = 0.6f),
+                    letterSpacing = 1.sp
+                ),
+                modifier = Modifier
+                    .align(Alignment.Start)
+                    .padding(bottom = 16.dp, start = 8.dp)
+            )
+            DeviceStatusCard(state = telemetryState)
+            Spacer(modifier = Modifier.height(32.dp))
+        }
 
         // Device Status Section Header
         Text(
@@ -140,22 +167,13 @@ fun CaregiverDashboardContent(
 
         // Phone Silent Card (User requested)
         StatusItemCard(
-            icon = if (isSilent) Icons.Default.VolumeOff else Icons.Default.VolumeUp,
+            icon = if (isSilent) {
+                Icons.AutoMirrored.Filled.VolumeOff
+            } else {
+                Icons.AutoMirrored.Filled.VolumeUp
+            },
             label = "Phone Silent",
             isOk = !isSilent // OK if NOT silent for a caregiver
-        )
-    }
-}
-
-@androidx.compose.ui.tooling.preview.Preview(showBackground = true)
-@Composable
-fun CaregiverDashboardPreview() {
-    MaterialTheme {
-        CaregiverDashboardContent(
-            isConnected = true,
-            notifGranted = false,
-            cameraGranted = false,
-            isSilent = false
         )
     }
 }
@@ -284,5 +302,160 @@ fun StatusItemCard(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun DeviceStatusCard(state: DeviceTelemetryUiState) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(32.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBackgroundColor)
+    ) {
+        Column(modifier = Modifier.padding(24.dp)) {
+            // Status and Last Seen
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    val statusColor = when (state.deviceStatus) {
+                        DeviceStatus.ONLINE -> ActiveGreen
+                        DeviceStatus.DELAYED -> Color(0xFFF0AD4E)
+                        DeviceStatus.OFFLINE -> DisconnectedRed
+                    }
+                    Box(
+                        modifier = Modifier
+                            .size(12.dp)
+                            .background(statusColor, CircleShape)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = state.deviceStatus.name,
+                        style = TextStyle(
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = statusColor
+                        )
+                    )
+                }
+                Text(
+                    text = state.lastSeenLabel,
+                    style = TextStyle(
+                        fontSize = 14.sp,
+                        color = SecondaryTextColor
+                    )
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Battery and Connectivity
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Battery
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.BatteryChargingFull,
+                        contentDescription = null,
+                        tint = when (state.batteryLevel) {
+                            BatteryLevel.NORMAL -> ActiveGreen
+                            BatteryLevel.WARNING -> Color(0xFFF0AD4E)
+                            BatteryLevel.CRITICAL -> DisconnectedRed
+                        },
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "${state.batteryPercentage}%${if (state.isCharging) " (Charging)" else ""}",
+                        style = TextStyle(
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = PrimaryTextColor
+                        )
+                    )
+                }
+
+                // Connectivity
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    val connIcon = when (state.connectivity) {
+                        ConnectivitySource.WIFI -> Icons.Default.Wifi
+                        ConnectivitySource.CELLULAR -> Icons.Default.CellTower
+                        ConnectivitySource.NONE -> Icons.Default.WifiOff
+                    }
+                    Icon(
+                        imageVector = connIcon,
+                        contentDescription = null,
+                        tint = SecondaryTextColor,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = state.connectivity.name,
+                        style = TextStyle(
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = PrimaryTextColor
+                        )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Location
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top
+            ) {
+                Icon(
+                    imageVector = Icons.Default.LocationOn,
+                    contentDescription = null,
+                    tint = ActiveGreen,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = state.locationLabel,
+                    style = TextStyle(
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = PrimaryTextColor
+                    )
+                )
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CaregiverDashboardPreview() {
+    MaterialTheme {
+        CaregiverDashboardContent(
+            isConnected = true,
+            notifGranted = false,
+            cameraGranted = false,
+            isSilent = false,
+            telemetryState = DeviceTelemetryUiState(
+                deviceStatus = DeviceStatus.ONLINE,
+                batteryLevel = BatteryLevel.NORMAL,
+                batteryPercentage = 77,
+                isCharging = false,
+                connectivity = ConnectivitySource.WIFI,
+                locationLabel = "Cairo, Egypt",
+                lastSeenLabel = "Last seen label"
+            )
+        )
     }
 }
