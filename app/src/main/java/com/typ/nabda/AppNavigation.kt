@@ -15,7 +15,7 @@ import com.typ.nabda.feature.pairing.PairingScreen
 fun AppNavigation() {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "role_selection") {
+    NavHost(navController = navController, startDestination = determineStartupDestination()) {
         composable("role_selection") {
             RoleSelectionScreen(
                 onRoleSelected = { isCaregiver ->
