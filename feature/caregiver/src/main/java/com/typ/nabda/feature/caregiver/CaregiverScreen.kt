@@ -1,6 +1,7 @@
 package com.typ.nabda.feature.caregiver
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeOff
@@ -26,6 +28,7 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SettingsInputAntenna
+import androidx.compose.material.icons.filled.Vibration
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -48,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.typ.nabda.core.model.ConnectivitySource
+import com.typ.nabda.core.model.SupportedAction
 import org.koin.compose.viewmodel.koinViewModel
 
 // New Design Colors
@@ -79,7 +83,8 @@ fun CaregiverScreen(
                 notifGranted = notifGranted,
                 cameraGranted = cameraGranted,
                 isSilent = isSilent,
-                telemetryState = telemetryState
+                telemetryState = telemetryState,
+                onActionClick = { viewModel.sendAction(it) }
             )
         }
     }
@@ -119,6 +124,7 @@ fun CaregiverDashboardContent(
     cameraGranted: Boolean,
     isSilent: Boolean,
     telemetryState: DeviceTelemetryUiState?,
+    onActionClick: (SupportedAction) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -143,9 +149,17 @@ fun CaregiverDashboardContent(
         )
 
         // System Active Indicator Card
-        SystemActiveCard(isConnected = isConnected)
+        SystemActiveCard(
+            isConnected = isConnected,
+            localStatus = telemetryState?.deviceStatus ?: DeviceStatus.OFFLINE
+        )
 
-        Spacer(modifier = Modifier.height(0.dp))
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Quick Actions Section
+        QuickActionsSection(onActionClick = onActionClick)
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Metrics Section Header
         Text(
@@ -184,7 +198,7 @@ fun CaregiverDashboardContent(
             label = "BATTERY",
             value = batteryValue,
             isOk = (telemetryState?.batteryLevel ?: BatteryLevel.NORMAL) != BatteryLevel.CRITICAL,
-            trailingIcon = if (telemetryState?.isCharging == true) Icons.Default.BatteryChargingFull else null // Use a lightning bolt if available
+            trailingIcon = if (telemetryState?.isCharging == true) Icons.Default.BatteryChargingFull else null
         )
 
         // Network Metric
@@ -217,19 +231,28 @@ fun CaregiverDashboardContent(
 }
 
 @Composable
-fun SystemActiveCard(isConnected: Boolean) {
+fun SystemActiveCard(isConnected: Boolean, localStatus: DeviceStatus) {
+    val cardColor = when (localStatus) {
+        DeviceStatus.ONLINE -> PrimaryGreen
+        DeviceStatus.DELAYED -> Color(0xFFFFA000)
+        DeviceStatus.OFFLINE -> Color(0xFFD32F2F)
+    }
+
+    val statusText = when (localStatus) {
+        DeviceStatus.ONLINE -> "LOCAL DEVICE CONNECTED"
+        DeviceStatus.DELAYED -> "LOCAL CONNECTION DELAYED"
+        DeviceStatus.OFFLINE -> if (isConnected) "SYSTEM ACTIVE (CLOUD)" else "SYSTEM DISCONNECTED"
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = CircleShape,
-        colors = CardDefaults.cardColors(containerColor = PrimaryGreen),
+        colors = CardDefaults.cardColors(containerColor = cardColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier
-                .padding(
-                    horizontal = 24.dp,
-                    vertical = 16.dp
-                )
+                .padding(horizontal = 24.dp, vertical = 16.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -253,28 +276,106 @@ fun SystemActiveCard(isConnected: Boolean) {
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = if (isConnected) "SYSTEM ACTIVE" else "DISCONNECTED",
+                    text = statusText,
                     style = TextStyle(
-                        fontSize = 22.sp,
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = Color.White
                     )
                 )
                 Text(
-                    text = if (isConnected) "Monitoring paired device" else "Check paired device connection",
+                    text = if (localStatus == DeviceStatus.ONLINE) "Real-time updates enabled" else "Check device connection",
                     style = TextStyle(
-                        fontSize = 14.sp,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color.White.copy(alpha = 0.8f)
                     )
                 )
             }
+        }
+    }
+}
 
-            // Small status dot
-            Box(
-                modifier = Modifier
-                    .size(12.dp)
-                    .background(Color.White.copy(alpha = 0.5f), CircleShape)
+@Composable
+fun QuickActionsSection(onActionClick: (SupportedAction) -> Unit) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "QUICK ACTIONS",
+            style = TextStyle(
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = MetricLabelColor,
+                letterSpacing = 1.sp
+            ),
+            modifier = Modifier.padding(start = 8.dp, bottom = 8.dp)
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            ActionTile(
+                modifier = Modifier.weight(1f),
+                label = "Vibrate",
+                icon = Icons.Default.Vibration,
+                color = Color(0xFF673AB7),
+                onClick = {
+//                    onActionClick(SupportedAction("vibrate", "Vibrate", "Trigger vibration", "NORMAL"))
+                }
+            )
+            ActionTile(
+                modifier = Modifier.weight(1f),
+                label = "Alert",
+                icon = Icons.Default.Notifications,
+                color = Color(0xFFF44336),
+                onClick = {
+                    onActionClick(SupportedAction.FALL)
+                }
+            )
+            ActionTile(
+                modifier = Modifier.weight(1f),
+                label = "Voice",
+                icon = Icons.AutoMirrored.Filled.VolumeUp,
+                color = Color(0xFF2196F3),
+                onClick = {
+                    onActionClick(SupportedAction.HELP_REQUEST)
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun ActionTile(
+    modifier: Modifier = Modifier,
+    label: String,
+    icon: ImageVector,
+    color: Color,
+    onClick: () -> Unit,
+) {
+    Surface(
+        modifier = modifier.clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        color = color.copy(alpha = 0.1f)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                tint = color,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = label,
+                style = TextStyle(
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = color
+                )
             )
         }
     }
@@ -340,7 +441,6 @@ fun MetricItemCard(
                 )
             }
 
-            // Trailing Indicator/Icon
             if (trailingIcon != null) {
                 Icon(
                     imageVector = trailingIcon,
@@ -348,17 +448,7 @@ fun MetricItemCard(
                     tint = TitleContentColor,
                     modifier = Modifier.size(20.dp)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
             }
-
-            /*if (isOk) {
-                Icon(
-                    imageVector = Icons.Default.CheckCircle,
-                    contentDescription = "Status OK",
-                    tint = SuccessGreen,
-                    modifier = Modifier.size(24.dp)
-                )
-            }*/
         }
     }
 }
@@ -367,8 +457,7 @@ fun MetricItemCard(
 @Composable
 fun CaregiverDashboardPreview() {
     MaterialTheme {
-
-    CaregiverDashboardContent(
+        CaregiverDashboardContent(
             isConnected = true,
             notifGranted = false,
             cameraGranted = false,
@@ -381,7 +470,8 @@ fun CaregiverDashboardPreview() {
                 connectivity = ConnectivitySource.WIFI,
                 locationLabel = "Cairo, Egypt",
                 lastSeenLabel = "Last seen label"
-            )
+            ),
+            onActionClick = {}
         )
     }
 }

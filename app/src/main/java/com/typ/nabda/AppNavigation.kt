@@ -20,9 +20,11 @@ fun AppNavigation() {
             RoleSelectionScreen(
                 onRoleSelected = { isCaregiver ->
                     if (isCaregiver) {
-                        navController.navigate("caregiver_onboarding_welcome")
+//                        navController.navigate("caregiver_onboarding_welcome")
+                        navController.navigate("caregiver_dashboard")
                     } else {
-                        navController.navigate("pairing/deafblind")
+//                        navController.navigate("pairing/deafblind")
+                        navController.navigate("deafblind_dashboard")
                     }
                 }
             )
