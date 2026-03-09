@@ -19,8 +19,8 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:model"))
-    implementation(project(":core:common"))
+    implementation(project(":core"))
+    implementation(project(":core"))
 
     // CameraX & MLKit
     implementation(libs.androidx.camera.core)

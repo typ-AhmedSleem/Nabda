@@ -19,11 +19,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:model"))
-    implementation(project(":core:common"))
-    implementation(project(":core:pairing"))
-    implementation(project(":core:messaging"))
-    implementation(project(":core:notifications"))
+    implementation(project(":core"))
 
     implementation(libs.koin.android)
     implementation(libs.kotlinx.coroutines.android)

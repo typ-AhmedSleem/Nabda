@@ -62,10 +62,7 @@ dependencies {
     implementation(project(":infrastructure:infra-storage"))
     implementation(project(":infrastructure:infra-qr"))
     // Core (if needed directly, otherwise transitive)
-    implementation(project(":core:common"))
-    implementation(project(":core:model"))
-    implementation(project(":core:dispatcher"))
-    implementation(project(":core:notifications"))
+    implementation(project(":core"))
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
