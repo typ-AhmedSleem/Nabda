@@ -36,4 +36,6 @@ include(":infrastructure:infra-fcm")
 include(":infrastructure:infra-storage")
 include(":infrastructure:infra-qr")
 include(":infrastructure:infra-localnetwork")
- 
+include(":designsystem")
+include(":caregiver-app")
+include(":deafblind-app")
