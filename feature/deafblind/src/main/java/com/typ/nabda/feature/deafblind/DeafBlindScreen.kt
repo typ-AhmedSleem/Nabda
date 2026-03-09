@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Swipe
 import androidx.compose.material.icons.filled.TouchApp
@@ -31,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,6 +43,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.typ.nabda.core.common.NabdaResult
 import com.typ.nabda.core.dispatcher.SignalDispatcher
 import com.typ.nabda.core.gestures.GestureClassifier
+import com.typ.nabda.core.messaging.IncomingActionDispatcher
 import com.typ.nabda.core.model.Action
 import com.typ.nabda.core.model.GestureInput
 import org.koin.compose.viewmodel.koinViewModel
@@ -59,6 +63,8 @@ fun DeafBlindScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(BackgroundColor)
+            .statusBarsPadding()
+            .navigationBarsPadding()
             .pointerInput(Unit) {
                 detectCustomGestures(
                     onPointersChanged = { viewModel.onPointersChanged(it) },
@@ -191,13 +197,16 @@ suspend fun PointerInputScope.detectCustomGestures(
 @Composable
 private fun DeafBlindScreenPreview() {
     MaterialTheme {
+        val ctx = LocalContext.current
         val vm = remember {
             DeafBlindViewModel(
-                object : SignalDispatcher {
+                signalDispatcher = object : SignalDispatcher {
                     override suspend fun dispatchAction(action: Action): NabdaResult<Unit> {
                         return NabdaResult.Success(Unit)
                     }
-                }
+                },
+                incomingActionDispatcher = IncomingActionDispatcher(),
+                context = ctx,
             )
         }
         DeafBlindScreen(vm)
