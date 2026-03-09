@@ -26,6 +26,8 @@ android {
 dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:common"))
+    implementation(project(":core:messaging"))
+    implementation(project(":core:notifications"))
     implementation(project(":core:gestures"))
     implementation(project(":core:actions"))
     implementation(project(":core:dispatcher"))
