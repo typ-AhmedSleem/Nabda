@@ -1,6 +1,7 @@
 package com.typ.nabda.feature.caregiver
 
 import android.util.Log
+import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.typ.nabda.core.model.Alert
@@ -34,6 +35,7 @@ import java.util.Date
 import java.util.Locale
 import java.util.UUID
 
+@Stable
 class CaregiverViewModel(
     private val notificationManager: NabdaNotificationManager,
     private val telemetryRepository: TelemetryRepository,
