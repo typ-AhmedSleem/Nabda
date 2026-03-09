@@ -26,3 +26,7 @@ interface TelemetrySender {
 fun interface TelemetryHandler {
     fun onTelemetryReceived(payload: TelemetryHeartbeatPayload)
 }
+
+fun interface ActionHandler {
+    fun onActionReceived(action: Action)
+}
