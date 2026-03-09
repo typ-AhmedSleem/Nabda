@@ -1,4 +1,4 @@
-package com.typ.nabda.ui.theme
+package com.typ.nabda.designsystem.theme
 
 import androidx.compose.ui.graphics.Color
 

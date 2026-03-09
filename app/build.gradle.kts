@@ -53,6 +53,7 @@ dependencies {
     // Koin
     implementation(libs.koin.android)
     implementation(libs.koin.compose)
+    implementation(project(":design-system"))
 
     // Modules
     implementation(project(":feature:deafblind"))
