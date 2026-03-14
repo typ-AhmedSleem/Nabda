@@ -20,7 +20,6 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "Nabda"
-include(":app")
 include(":core")
 include(":feature:deafblind")
 include(":feature:caregiver")
