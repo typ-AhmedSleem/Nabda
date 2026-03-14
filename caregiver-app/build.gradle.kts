@@ -2,11 +2,11 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-//    alias(libs.plugins.google.services)
+    alias(libs.plugins.google.services)
 }
 
 android {
-    namespace = "com.typ.nabda.caregiver"
+    namespace = "com.typ.nabda"
     compileSdk {
         version = release(36)
     }
@@ -51,6 +51,7 @@ dependencies {
     implementation(libs.koin.compose)
 
     // Modules
+    implementation(project(":design-system"))
     implementation(project(":feature:caregiver"))
     implementation(project(":feature:pairing"))
     implementation(project(":infrastructure:infra-fcm"))

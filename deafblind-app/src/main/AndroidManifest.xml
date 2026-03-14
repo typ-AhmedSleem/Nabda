@@ -14,7 +14,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
-        android:name=".caregiver.NabdaApplication"
+        android:name="com.typ.nabda.deaf.NabdaApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -24,9 +24,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Nabda"
         android:usesCleartextTraffic="true">
-
         <activity
-            android:name=".caregiver.MainActivity"
+            android:name="com.typ.nabda.deaf.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.Nabda">
             <intent-filter>
@@ -36,5 +35,10 @@
             </intent-filter>
         </activity>
 
+        <service
+            android:name="com.typ.nabda.feature.deafblind.localserver.LocalServerService"
+            android:exported="false"
+            android:foregroundServiceType="connectedDevice" />
     </application>
+
 </manifest>
