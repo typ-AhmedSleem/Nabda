@@ -9,13 +9,13 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.typ.nabda.core.messaging.TokenRepository
 import com.typ.nabda.core.model.PairedDevice
 import com.typ.nabda.core.pairing.PairingRepository
@@ -38,7 +38,7 @@ fun PairingScreen(
     onPairingComplete: () -> Unit,
     viewModel: PairingViewModel = koinViewModel(),
 ) {
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(isCaregiver) {
         viewModel.setRole(isCaregiver)
@@ -214,7 +214,8 @@ private fun PairingScreenDeafPreview() {
         PairingScreen(
             isCaregiver = false,
             viewModel = vm,
-            onPairingComplete = {})
+            onPairingComplete = {}
+        )
     }
 }
 

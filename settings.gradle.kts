@@ -21,18 +21,14 @@ dependencyResolutionManagement {
 
 rootProject.name = "Nabda"
 include(":app")
-include(":core:common")
-include(":core:model")
-include(":core:gestures")
-include(":core:actions")
-include(":core:dispatcher")
-include(":core:messaging")
-include(":core:notifications")
-include(":core:pairing")
+include(":core")
 include(":feature:deafblind")
 include(":feature:caregiver")
 include(":feature:pairing")
 include(":infrastructure:infra-fcm")
 include(":infrastructure:infra-storage")
 include(":infrastructure:infra-qr")
- 
+include(":infrastructure:infra-localnetwork")
+include(":design-system")
+include(":caregiver-app")
+include(":deafblind-app")

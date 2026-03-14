@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Nabda</string>
+    <string name="brand_name">NABDA</string>
+    <string name="choose_your_role">Choose\nyour role</string>
+    <string name="select_interface_to_begin">Select a role to begin</string>
+    <string name="i_am_a_deaf_user">I am a\nDeaf User</string>
+    <string name="i_am_a_caregiver">I am a\nCaregiver</string>
 </resources>
