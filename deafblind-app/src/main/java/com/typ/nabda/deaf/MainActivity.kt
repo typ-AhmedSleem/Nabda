@@ -13,6 +13,15 @@ import com.typ.nabda.designsystem.theme.NabdaTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Start local server service
+        val intent = android.content.Intent(this, com.typ.nabda.deaf.service.ServerService::class.java)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            startForegroundService(intent)
+        } else {
+            startService(intent)
+        }
+
         enableEdgeToEdge()
         setContent {
             AppNavigation()
