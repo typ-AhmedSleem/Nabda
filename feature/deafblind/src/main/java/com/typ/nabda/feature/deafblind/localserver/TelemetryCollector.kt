@@ -14,6 +14,8 @@ import com.typ.nabda.core.model.ConnectivitySource
 import com.typ.nabda.core.model.LocationSnapshot
 import com.typ.nabda.core.model.TelemetryHeartbeatPayload
 import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants.TAG_SERVER
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * Collects device telemetry data (battery, connectivity, location) from Android system APIs.
@@ -28,15 +30,17 @@ class TelemetryCollector(private val context: Context) {
     /**
      * Assembles a complete [TelemetryHeartbeatPayload] snapshot.
      */
-    fun collect(deviceId: String): TelemetryHeartbeatPayload {
-        return TelemetryHeartbeatPayload(
-            deviceId = deviceId,
-            batteryPercentage = getBatteryPercentage(),
-            connectivitySource = getConnectivitySource(),
-            isCharging = getIsCharging(),
-            location = null, // todo: call 'getLocation()'
-            timestamp = System.currentTimeMillis(),
-        )
+    suspend fun collect(deviceId: String): TelemetryHeartbeatPayload {
+        return withContext(Dispatchers.Default) {
+            TelemetryHeartbeatPayload(
+                deviceId = deviceId,
+                batteryPercentage = getBatteryPercentage(),
+                connectivitySource = getConnectivitySource(),
+                isCharging = getIsCharging(),
+                location = getLocation(),
+                timestamp = System.currentTimeMillis(),
+            )
+        }
     }
 
     // ── Battery ─────────────────────────────────────────────────────────────
