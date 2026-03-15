@@ -16,7 +16,6 @@ import com.typ.nabda.feature.caregiver.localclient.HeartbeatPoller
 import com.typ.nabda.infrastructure.localnetwork.client.ConnectionStatus
 import com.typ.nabda.infrastructure.localnetwork.client.LocalClientRegistry
 import com.typ.nabda.infrastructure.localnetwork.model.ActionPayload
-import com.typ.nabda.infrastructure.localnetwork.model.DeviceConnectionState
 import com.typ.nabda.infrastructure.localnetwork.model.GestureAction
 import com.typ.nabda.infrastructure.localnetwork.transport.TelemetryTransport
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -51,24 +50,6 @@ class CaregiverViewModel(
     val isCameraPermissionGranted = MutableStateFlow(true).asStateFlow()
     val isPhoneSilent = MutableStateFlow(false).asStateFlow()
 
-    init {
-        // Observe status from LocalClientRegistry to trigger behaviors
-        viewModelScope.launch {
-            LocalClientRegistry.status.collect { status ->
-                Log.d("CaregiverViewModel", "Connection status: $status")
-            }
-        }
-
-        // Observe Telemetry from LocalClientRegistry
-        viewModelScope.launch {
-            LocalClientRegistry.telemetry.collect { payload ->
-                if (payload != null) {
-                    // Update any internal state or repository if needed
-                }
-            }
-        }
-    }
-
     override fun onCleared() {
         super.onCleared()
         discoveryManager.stopDiscovery()
@@ -94,7 +75,7 @@ class CaregiverViewModel(
         initialValue = null
     )
 
-    private suspend fun mapToUiState(payload: TelemetryHeartbeatPayload, state: DeviceConnectionState): DeviceTelemetryUiState {
+    /*private suspend fun mapToUiState(payload: TelemetryHeartbeatPayload, state: DeviceConnectionState): DeviceTelemetryUiState {
         val status = when (state) {
             DeviceConnectionState.ONLINE -> DeviceStatus.ONLINE
             DeviceConnectionState.WARNING -> DeviceStatus.ONLINE
@@ -102,7 +83,9 @@ class CaregiverViewModel(
             DeviceConnectionState.OFFLINE -> DeviceStatus.OFFLINE
         }
         return mapToUiState(payload, status)
-    }
+    }*/
+
+    private val timeFormatter = SimpleDateFormat("HH:mm", Locale.getDefault())
 
     private suspend fun mapToUiState(payload: TelemetryHeartbeatPayload, status: DeviceStatus): DeviceTelemetryUiState {
         val payloadBatteryPercentage = payload.batteryPercentage ?: 0
@@ -113,7 +96,7 @@ class CaregiverViewModel(
         }
 
         val timestamp = if (payload.timestamp > 0) payload.timestamp else System.currentTimeMillis()
-        val lastSeenLabel = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(timestamp))
+        val lastSeenLabel = timeFormatter.format(Date(timestamp))
 
         return DeviceTelemetryUiState(
             deviceStatus = status,
