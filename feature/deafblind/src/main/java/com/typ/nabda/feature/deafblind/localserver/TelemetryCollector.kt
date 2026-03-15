@@ -37,9 +37,39 @@ class TelemetryCollector(private val context: Context) {
                 batteryPercentage = getBatteryPercentage(),
                 connectivitySource = getConnectivitySource(),
                 isCharging = getIsCharging(),
+                signalStrength = getSignalStrength(),
+                isSilentMode = getIsSilentMode(),
                 location = getLocation(),
                 timestamp = System.currentTimeMillis(),
             )
+        }
+    }
+
+    private fun getSignalStrength(): Int? {
+        return try {
+            val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val network = cm.activeNetwork ?: return null
+            val caps = cm.getNetworkCapabilities(network) ?: return null
+
+            if (caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as android.net.wifi.WifiManager
+                val info = wifiManager.connectionInfo
+                android.net.wifi.WifiManager.calculateSignalLevel(info.rssi, 5) // 0-4
+            } else if (caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+                val tm = context.getSystemService(Context.TELEPHONY_SERVICE) as android.telephony.TelephonyManager
+                tm.signalStrength?.level ?: 0
+            } else null
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun getIsSilentMode(): Boolean? {
+        return try {
+            val am = context.getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
+            am.ringerMode != android.media.AudioManager.RINGER_MODE_NORMAL
+        } catch (e: Exception) {
+            null
         }
     }
 
