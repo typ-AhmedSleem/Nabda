@@ -4,6 +4,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" />
 
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -12,9 +13,10 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
-        android:name=".caregiver.NabdaApplication"
+        android:name="com.typ.nabda.caregiver.NabdaApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -26,7 +28,7 @@
         android:usesCleartextTraffic="true">
 
         <activity
-            android:name=".caregiver.MainActivity"
+            android:name="com.typ.nabda.caregiver.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.Nabda">
             <intent-filter>
@@ -36,5 +38,9 @@
             </intent-filter>
         </activity>
 
+        <service
+            android:name="com.typ.nabda.caregiver.service.CaregiverService"
+            android:exported="false"
+            android:foregroundServiceType="connectedDevice" />
     </application>
 </manifest>
