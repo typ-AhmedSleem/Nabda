@@ -8,6 +8,8 @@ data class TelemetryHeartbeatPayload(
     val batteryPercentage: Int?,
     val connectivitySource: ConnectivitySource,
     val isCharging: Boolean?,
+    val signalStrength: Int?, // 0-4 bars
+    val isSilentMode: Boolean?,
     val location: LocationSnapshot?,
     val timestamp: Long,
 )
