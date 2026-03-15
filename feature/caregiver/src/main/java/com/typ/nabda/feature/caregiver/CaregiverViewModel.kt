@@ -20,9 +20,11 @@ import com.typ.nabda.infrastructure.localnetwork.model.DeviceConnectionState
 import com.typ.nabda.infrastructure.localnetwork.model.GestureAction
 import com.typ.nabda.infrastructure.localnetwork.transport.TelemetryTransport
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
@@ -118,10 +120,32 @@ class CaregiverViewModel(
             batteryLevel = batteryLevel,
             batteryPercentage = payloadBatteryPercentage,
             isCharging = payload.isCharging ?: false,
+            signalStrength = payload.signalStrength ?: 0,
+            isSilentMode = payload.isSilentMode ?: false,
             connectivity = payload.connectivitySource,
             locationLabel = if (payload.location != null) geocoder.geocode(payload.location) else "Unknown",
-            lastSeenLabel = "Last seen: $lastSeenLabel"
+            lastSeenLabel = "Last seen: $lastSeenLabel",
+            rawTimestamp = timestamp
         )
+    }
+
+    // Navigation events
+    private val _navigationEvents = MutableSharedFlow<CaregiverNavigationEvent>()
+    val navigationEvents = _navigationEvents.asSharedFlow()
+
+    init {
+        // ... (previous init code)
+        viewModelScope.launch {
+            LocalClientRegistry.status.collect { status ->
+                if (status == ConnectionStatus.IDLE) {
+                    _navigationEvents.emit(CaregiverNavigationEvent.NavigateToDiscovery)
+                }
+            }
+        }
+    }
+
+    enum class CaregiverNavigationEvent {
+        NavigateToDiscovery
     }
 
     /**
