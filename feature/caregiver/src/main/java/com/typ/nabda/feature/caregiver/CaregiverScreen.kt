@@ -416,7 +416,6 @@ fun MetricGridCard(
                         Text(
                             text = topLabel,
                             modifier = Modifier
-                                .fillMaxWidth()
                                 .padding(horizontal = 8.dp, vertical = 2.dp),
                             style = TextStyle(
                                 fontSize = 10.sp,
