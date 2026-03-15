@@ -56,6 +56,16 @@ class DeafBlindViewModel(
     }
 
     fun onGestureInput(input: GestureInput) {
+        if (_uiState.value.connectedClientsCount == 0) {
+            _uiState.update { it.copy(feedbackMessage = "NOT CONNECTED") }
+            hapticEngine.performHaptic(HapticEnginePattern.NotConnected)
+            viewModelScope.launch {
+                delay(2000)
+                _uiState.update { it.copy(feedbackMessage = "READY") }
+            }
+            return
+        }
+
         if (_uiState.value.isWaitingForConfirmation) {
             handleConfirmation(input)
         } else {
