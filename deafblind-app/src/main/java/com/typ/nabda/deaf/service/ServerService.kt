@@ -5,7 +5,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.Network
@@ -18,9 +17,11 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.typ.nabda.core.model.TelemetryHeartbeatPayload
 import com.typ.nabda.deaf.MainActivity
 import com.typ.nabda.feature.deafblind.localserver.TelemetryCollector
 import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants
+import com.typ.nabda.infrastructure.localnetwork.model.ActionPayload
 import com.typ.nabda.infrastructure.localnetwork.server.LocalKtorServer
 import com.typ.nabda.infrastructure.localnetwork.server.LocalServerRegistry
 import kotlinx.coroutines.CoroutineScope
@@ -41,6 +42,9 @@ import kotlinx.coroutines.launch
  */
 class ServerService : Service() {
 
+    private val _connectedClientsCount = MutableStateFlow(0)
+    val connectedClientsCount: StateFlow<Int> = _connectedClientsCount.asStateFlow()
+
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var ktorServer: LocalKtorServer? = null
     private var nsdManager: NsdManager? = null
@@ -48,9 +52,6 @@ class ServerService : Service() {
     private var multicastLock: WifiManager.MulticastLock? = null
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
     private lateinit var telemetryCollector: TelemetryCollector
-
-    private val _connectedClientsCount = MutableStateFlow(0)
-    val connectedClientsCount: StateFlow<Int> = _connectedClientsCount.asStateFlow()
 
     private val _acks = MutableSharedFlow<String>(extraBufferCapacity = 5)
     val acks: SharedFlow<String> = _acks.asSharedFlow()
@@ -66,11 +67,11 @@ class ServerService : Service() {
         var currentInstance: ServerService? = null
             private set
 
-        suspend fun broadcastAction(action: com.typ.nabda.infrastructure.localnetwork.model.ActionPayload) {
+        suspend fun broadcastAction(action: ActionPayload) {
             LocalServerRegistry.activeServer?.broadcastAction(action)
         }
 
-        suspend fun broadcastTelemetry(telemetry: com.typ.nabda.core.model.TelemetryHeartbeatPayload) {
+        suspend fun broadcastTelemetry(telemetry: TelemetryHeartbeatPayload) {
             LocalServerRegistry.activeServer?.broadcastTelemetry(telemetry)
         }
     }
