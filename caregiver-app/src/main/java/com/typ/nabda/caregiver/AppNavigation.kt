@@ -10,6 +10,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.typ.nabda.caregiver.alerts.HighPriorityAlertOverlay
+import com.typ.nabda.caregiver.pairing.PairingScannerScreen
+import com.typ.nabda.caregiver.pairing.WifiPairingViewModel
 import com.typ.nabda.caregiver.service.CaregiverService
 import com.typ.nabda.core.model.ActionPriority
 import com.typ.nabda.feature.caregiver.CaregiverScreen
@@ -28,8 +30,8 @@ fun AppNavigation() {
     Box(modifier = Modifier.fillMaxSize()) {
         NavHost(navController = navController, startDestination = "pairing_scanner") {
             composable("pairing_scanner") {
-                val viewModel: com.typ.nabda.caregiver.pairing.WifiPairingViewModel = koinViewModel()
-                com.typ.nabda.caregiver.pairing.PairingScannerScreen(
+                val viewModel: WifiPairingViewModel = koinViewModel()
+                PairingScannerScreen(
                     viewModel = viewModel,
                     onPairingSuccess = {
                         navController.navigate("caregiver_dashboard") {
@@ -82,7 +84,13 @@ fun AppNavigation() {
             }
 
             composable("caregiver_dashboard") {
-                CaregiverScreen()
+                CaregiverScreen(
+                    onNavigateToDiscovery = {
+                        navController.navigate("pairing_scanner") {
+                            popUpTo("caregiver_dashboard") { inclusive = true }
+                        }
+                    }
+                )
             }
         }
 
