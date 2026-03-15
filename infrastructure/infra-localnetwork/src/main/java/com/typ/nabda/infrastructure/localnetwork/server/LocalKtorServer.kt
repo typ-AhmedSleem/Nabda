@@ -10,6 +10,7 @@ import io.ktor.server.cio.CIOApplicationEngine
 import io.ktor.server.engine.EmbeddedServer
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.origin
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import io.ktor.server.websocket.DefaultWebSocketServerSession
@@ -23,7 +24,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.isActive
 import kotlinx.serialization.json.Json
-import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -53,7 +53,7 @@ class LocalKtorServer(
 
             routing {
                 webSocket("/ws/events") {
-                    val clientId = UUID.randomUUID().toString()
+                    val clientId = call.request.origin.remoteHost
                     clients[clientId] = this
                     onClientConnected(clientId)
 
@@ -69,7 +69,7 @@ class LocalKtorServer(
                             }
                         }
                     } catch (e: Exception) {
-                        e.printStackTrace()
+                        // Log or handle connection issues
                     } finally {
                         clients.remove(clientId)
                         onClientDisconnected(clientId)
