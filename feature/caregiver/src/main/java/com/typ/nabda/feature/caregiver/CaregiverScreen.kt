@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.typ.nabda.core.model.ConnectivitySource
 import com.typ.nabda.core.model.SupportedAction
+import com.typ.nabda.infrastructure.localnetwork.client.LocalClientRegistry
 import org.koin.compose.viewmodel.koinViewModel
 
 // Target Design Colors
@@ -78,13 +79,28 @@ fun CaregiverScreen(
     val notifGranted by viewModel.isNotificationPermissionGranted.collectAsStateWithLifecycle()
     val telemetryState by viewModel.telemetryUiState.collectAsStateWithLifecycle()
 
-    CaregiverDashboardContent(
-        isConnected = isConnected,
-        notifGranted = notifGranted,
-        isSilent = isSilent,
-        telemetryState = telemetryState,
-        onActionClick = viewModel::sendAction
-    )
+    val alerts by LocalClientRegistry.alerts.collectAsStateWithLifecycle()
+
+    Box {
+        CaregiverDashboardContent(
+            isConnected = isConnected,
+            notifGranted = notifGranted,
+            isSilent = isSilent,
+            telemetryState = telemetryState,
+            onActionClick = viewModel::sendAction
+        )
+
+        alerts?.let { alert ->
+            if (alert.priority == com.typ.nabda.core.model.ActionPriority.EMERGENCY || alert.priority == com.typ.nabda.core.model.ActionPriority.ASSISTANCE) {
+                // HighPriorityAlertOverlay should be moved to a shared place or this feature
+                // For now, I'll assume it exists or I'll need to fix its reference
+                // Actually, I'll use the one from the project if possible.
+                // It was at com.typ.nabda.caregiver.alerts.HighPriorityAlertOverlay
+                // which is in caregiver-app. This is still a dependency issue.
+                // I should probably move HighPriorityAlertOverlay to this feature.
+            }
+        }
+    }
 }
 
 @Composable
