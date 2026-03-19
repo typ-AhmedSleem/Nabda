@@ -23,16 +23,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.typ.nabda.feature.pairing.R
 
 @Composable
 fun PairingSuccessContent(
     modifier: Modifier = Modifier,
     onFinish: () -> Unit,
-    title: String = "Pairing Successful",
-    subtitle: String = "You are now connected",
-    buttonText: String = "Finish Setup",
+    title: String = stringResource(R.string.pairing_successful),
+    subtitle: String = stringResource(R.string.connected_now),
+    buttonText: String = stringResource(R.string.finish_setup),
 ) {
     Column(
         modifier = modifier

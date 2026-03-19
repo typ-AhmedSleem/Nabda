@@ -1,11 +1,13 @@
 package com.typ.nabda.feature.pairing.caregiver
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.typ.nabda.feature.pairing.R
 import com.typ.nabda.feature.pairing.common.PairingFailureContent
 
 @Composable
 fun CaregiverFailedScreen(
-    title: String = "Pairing failed",
+    title: String = stringResource(R.string.pairing_failed),
     onRetry: () -> Unit,
 ) {
     PairingFailureContent(

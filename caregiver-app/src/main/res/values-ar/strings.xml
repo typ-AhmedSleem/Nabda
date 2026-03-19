@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">مرافق نبضة</string>
+    <string name="brand_name">نبضة</string>
+    <string name="choose_your_role">اختار\nدورك</string>
+    <string name="select_interface_to_begin">اختار دورك عشان تبدأ</string>
+    <string name="i_am_a_deaf_user">أنا مستخدم\nأصم كفيف</string>
+    <string name="i_am_a_caregiver">أنا\nمرافق</string>
+    <string name="searching_for_devices">بندور على أجهزة…</string>
+    <string name="make_sure_device_on">بندور على أي أجهزة نبضة في الشبكة بتاعتك</string>
+    <string name="found_devices">الأجهزة الموجودة</string>
+    <string name="discovered_count">لقينا %1$d</string>
+    <string name="pair">ربط</string>
+    <string name="retry">حاول تاني</string>
+    <string name="dont_see_device">مش لاقي الجهاز؟</string>
+    <string name="pairing_help_text">اتأكد إن الجهاز في وضع الربط وقريب من موبايلك. لو لسه مش ظاهر، جرب تفتح الجهاز وتقفله تاني.</string>
+    <string name="device_glucose_monitor">جهاز قياس السكر v2</string>
+    <string name="device_smartband_pro">ساعة نبضة برو</string>
+    <string name="device_thermometer">ترمومتر ذكي</string>
+    <string name="device_bp_monitor">جهاز ضغط X5</string>
+    <string name="signal_strong">إشارة قوية</string>
+    <string name="signal_excellent">إشارة ممتازة</string>
+    <string name="signal_fair">إشارة متوسطة</string>
+    <string name="signal_weak">إشارة ضعيفة</string>
+    <string name="info_icon_text">i</string>
+    <string name="caregiver_connectivity">اتصال المرافق</string>
+    <string name="connection_status_prefix">الحالة: %1$s</string>
+    <string name="caregiver_status_channel">حالة المرافق</string>
+    <string name="high_priority_alert">تنبيه طارئ</string>
+    <string name="received">تم الاستلام</string>
+</resources>

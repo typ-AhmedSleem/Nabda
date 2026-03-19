@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -87,7 +88,7 @@ fun CaregiverHistoryContent(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "History",
+                text = stringResource(R.string.history),
                 style = TextStyle(
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
@@ -134,7 +135,7 @@ fun CaregiverHistoryContent(
         if (alerts.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(
-                    text = "No history available",
+                    text = stringResource(R.string.no_history_available),
                     style = TextStyle(color = SecondaryTextColor, fontSize = 16.sp)
                 )
             }
@@ -202,8 +203,8 @@ fun HistoryItem(alert: Alert, prettyTime: PrettyTime) {
     }
 
     val label = when (alert.actionId) {
-        SupportedAction.HELP_REQUEST.id -> "HELP REQUESTED"
-        SupportedAction.FALL.id -> "FALL DETECTED"
+        SupportedAction.HELP_REQUEST.id -> stringResource(R.string.help_requested)
+        SupportedAction.FALL.id -> stringResource(R.string.fall_detected)
         else -> alert.actionName.uppercase()
     }
 

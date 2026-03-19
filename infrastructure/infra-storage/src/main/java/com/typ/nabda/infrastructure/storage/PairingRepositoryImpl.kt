@@ -4,20 +4,17 @@ import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.SetOptions
 import com.typ.nabda.core.model.PairedDevice
 import com.typ.nabda.core.pairing.PairingRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.tasks.await
 
 private val Context.dataStore by preferencesDataStore(name = "pairing_settings")
 
 class PairingRepositoryImpl(
     private val context: Context,
-    private val firestore: FirebaseFirestore,
+//    private val firestore: FirebaseFirestore,
 ) : PairingRepository {
 
     private val KEY_PAIRED_DEVICE_UUID = stringPreferencesKey("paired_device_uuid")
@@ -41,13 +38,13 @@ class PairingRepositoryImpl(
             preferences[KEY_PAIRED_DEVICE_TOKEN] = device.fcmToken
         }
 
-        val myUUID = getMyUUID()
+        /*val myUUID = getMyUUID()
         if (myUUID.isNotEmpty()) {
             val userUpdate = hashMapOf("pairedWith" to device.uuid)
             firestore.collection("users").document(myUUID)
                 .set(userUpdate, SetOptions.merge())
                 .await()
-        }
+        }*/
     }
 
     override suspend fun clearPairedDevice() {
@@ -55,13 +52,13 @@ class PairingRepositoryImpl(
             preferences.remove(KEY_PAIRED_DEVICE_UUID)
             preferences.remove(KEY_PAIRED_DEVICE_TOKEN)
         }
-        val myUUID = getMyUUID()
+        /*val myUUID = getMyUUID()
         if (myUUID.isNotEmpty()) {
             val userUpdate = hashMapOf<String, Any?>("pairedWith" to null)
             firestore.collection("users").document(myUUID)
                 .set(userUpdate, SetOptions.merge())
                 .await()
-        }
+        }*/
     }
 
     override fun getPairedDeviceFlow(): Flow<PairedDevice?> {

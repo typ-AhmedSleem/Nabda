@@ -23,17 +23,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.typ.nabda.feature.pairing.R
 
 @Composable
 fun PairingFailureContent(
     modifier: Modifier = Modifier,
     onRetry: () -> Unit,
-    title: String = "Pairing failed",
-    subtitle: String = "Something went wrong during the connection process. Please ensure both devices are online and try again.",
-    buttonText: String = "Retry",
+    title: String = stringResource(R.string.pairing_failed),
+    subtitle: String = stringResource(R.string.pairing_failed_subtitle),
+    buttonText: String = stringResource(R.string.retry),
 ) {
     Column(
         modifier = modifier

@@ -1,13 +1,15 @@
 package com.typ.nabda.feature.pairing.deaf
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.typ.nabda.feature.pairing.R
 import com.typ.nabda.feature.pairing.common.PairingFailureContent
 
 @Composable
 fun DeafFailedScreen(
-    title: String = "Pairing failed",
-    subtitle: String = "Something went wrong during the connection process. Please ensure both devices are online and try again.",
-    buttonText: String = "Retry",
+    title: String = stringResource(R.string.pairing_failed),
+    subtitle: String = stringResource(R.string.pairing_failed_subtitle),
+    buttonText: String = stringResource(R.string.retry),
     onRetry: () -> Unit,
 ) {
     PairingFailureContent(

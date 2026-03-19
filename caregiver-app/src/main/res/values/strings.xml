@@ -1,8 +1,30 @@
 <resources>
-    <string name="app_name">Nabda</string>
+    <string name="app_name">Nabda Caregiver</string>
     <string name="brand_name">NABDA</string>
     <string name="choose_your_role">Choose\nyour role</string>
     <string name="select_interface_to_begin">Select a role to begin</string>
     <string name="i_am_a_deaf_user">I am a\nDeaf User</string>
     <string name="i_am_a_caregiver">I am a\nCaregiver</string>
+    <string name="searching_for_devices">Searching network…</string>
+    <string name="make_sure_device_on">Looking for any NABDA devices in your network</string>
+    <string name="found_devices">Found Devices</string>
+    <string name="discovered_count">%1$d DISCOVERED</string>
+    <string name="pair">Pair</string>
+    <string name="retry">Retry</string>
+    <string name="dont_see_device">Don’t see your device?</string>
+    <string name="pairing_help_text">Ensure the device is in pairing mode and within 10 feet of your phone. If it still doesn’t appear, try restarting the device.</string>
+    <string name="device_glucose_monitor">Glucose Monitor v2</string>
+    <string name="device_smartband_pro">Nabda SmartBand Pro</string>
+    <string name="device_thermometer">Smart Thermometer</string>
+    <string name="device_bp_monitor">BP Monitor X5</string>
+    <string name="signal_strong">Strong Signal</string>
+    <string name="signal_excellent">Excellent Signal</string>
+    <string name="signal_fair">Fair Signal</string>
+    <string name="signal_weak">Weak Signal</string>
+    <string name="info_icon_text">i</string>
+    <string name="caregiver_connectivity">Caregiver Connectivity</string>
+    <string name="connection_status_prefix">Status: %1$s</string>
+    <string name="caregiver_status_channel">Caregiver Status</string>
+    <string name="high_priority_alert">HIGH PRIORITY ALERT</string>
+    <string name="received">RECEIVED</string>
 </resources>

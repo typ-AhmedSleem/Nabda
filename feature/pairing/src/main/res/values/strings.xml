@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pair_device">Pair Device</string>
+    <string name="ready_to_pair">Ready to pair ..</string>
+    <string name="pairing_description">Position your device nearby or use the pairing code from the device screen.</string>
+    <string name="pairing_code_label">Pairing code</string>
+    <string name="pairing_code_placeholder">Enter pairing code manually</string>
+    <string name="pair">Pair</string>
+    <string name="or_divider">OR</string>
+    <string name="pair_using_qr">Pair using QR</string>
+    <string name="finish_setup">Finish Setup</string>
+    <string name="scan_qr_description">Scan this QR on Caregiver app to pair or input it manually</string>
+    <string name="pair_id_label">Pair id: </string>
+    <string name="pairing_in_progress">Pairing in progress…</string>
+    <string name="pairing_failed">Pairing failed</string>
+    <string name="pairing_failed_subtitle">Something went wrong during the connection process. Please ensure both devices are online and try again.</string>
+    <string name="retry">Retry</string>
+    <string name="pairing_successful">Pairing Successful</string>
+    <string name="connected_now">You are now connected</string>
+</resources>

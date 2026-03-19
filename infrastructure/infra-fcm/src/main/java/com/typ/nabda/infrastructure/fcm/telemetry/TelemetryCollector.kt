@@ -4,17 +4,17 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.location.Location
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.BatteryManager
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.tasks.Tasks
+import com.github.shubham0812.locus.Locus
 import com.typ.nabda.core.model.ConnectivitySource
 import com.typ.nabda.core.model.LocationSnapshot
 import com.typ.nabda.core.model.TelemetryHeartbeatPayload
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.resume
 
 class TelemetryCollector(private val context: Context) {
 
@@ -45,20 +45,7 @@ class TelemetryCollector(private val context: Context) {
             else -> ConnectivitySource.NONE
         }
 
-        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-        val locationSnapshot = try {
-            val locationTask = fusedLocationClient.lastLocation
-            val location: Location? = Tasks.await(locationTask)
-            if (location != null && location.accuracy < 50f) {
-                LocationSnapshot(
-                    latitude = location.latitude,
-                    longitude = location.longitude,
-                    accuracyMeters = location.accuracy
-                )
-            } else null
-        } catch (e: Exception) {
-            null
-        }
+        val locationSnapshot = getLocation()
 
         TelemetryHeartbeatPayload(
             deviceId = deviceId,
@@ -68,5 +55,33 @@ class TelemetryCollector(private val context: Context) {
             location = locationSnapshot,
             timestamp = System.currentTimeMillis()
         )
+    }
+
+    private suspend fun getLocation(): LocationSnapshot? = suspendCancellableCoroutine { continuation ->
+        try {
+            Locus.getCurrentLocation(context) { result ->
+                val location = result.location
+                if (location == null) {
+                    if (continuation.isActive) continuation.resume(null)
+                    return@getCurrentLocation
+                }
+
+                if (location.accuracy > 50f) {
+                    if (continuation.isActive) continuation.resume(null)
+                } else {
+                    if (continuation.isActive) {
+                        continuation.resume(
+                            LocationSnapshot(
+                                latitude = location.latitude,
+                                longitude = location.longitude,
+                                accuracyMeters = location.accuracy,
+                            )
+                        )
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            if (continuation.isActive) continuation.resume(null)
+        }
     }
 }

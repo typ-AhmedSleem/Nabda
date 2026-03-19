@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="status_idle">غير متصل</string>
+    <string name="status_scanning">جاري البحث</string>
+    <string name="status_pairing">جاري الاقتران</string>
+    <string name="status_paired">تم الاقتران</string>
+    <string name="status_failed">فشل</string>
+    <string name="status_wifi_disabled">الواي فاي معطل</string>
+</resources>

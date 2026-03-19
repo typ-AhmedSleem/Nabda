@@ -17,11 +17,14 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Swipe
 import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,6 +37,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,6 +47,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.typ.nabda.core.common.NabdaResult
 import com.typ.nabda.core.dispatcher.SignalDispatcher
 import com.typ.nabda.core.gestures.GestureClassifier
+import com.typ.nabda.core.haptic.AndroidHapticEngine
 import com.typ.nabda.core.messaging.IncomingActionDispatcher
 import com.typ.nabda.core.model.Action
 import com.typ.nabda.core.model.GestureInput
@@ -71,33 +76,62 @@ fun DeafBlindScreen(
                     onGesture = { viewModel.onGestureInput(it) }
                 )
             }
+            .then(if (state.connectedClientsCount == 0) Modifier.background(Color.Black.copy(alpha = 0.3f)) else Modifier)
     ) {
         // App Title at the top center
-        Text(
-            text = "Nabda",
-            style = MaterialTheme.typography.headlineMedium,
-            color = IconTint,
+        Column(
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = 16.dp)
-        )
+                .padding(top = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = stringResource(R.string.nabda),
+                style = MaterialTheme.typography.headlineMedium,
+                color = IconTint
+            )
+
+            Surface(
+                color = if (state.connectedClientsCount > 0) Color(0xFF4CAF50) else Color(0xFFF44336),
+                shape = MaterialTheme.shapes.extraSmall,
+                modifier = Modifier.padding(top = 4.dp)
+            ) {
+                Text(
+                    text = if (state.connectedClientsCount > 0) stringResource(
+                        R.string.clients_connected_format,
+                        state.connectedClientsCount
+                    ) else stringResource(R.string.no_clients_connected),
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                    color = Color.White,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                )
+            }
+        }
 
         // Action Feedback
         Column(
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = 80.dp),
+                .padding(top = 120.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = state.feedbackMessage,
+                text = state.feedbackMessage.asString(),
                 style = MaterialTheme.typography.displaySmall.copy(
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 32.sp
                 ),
-                color = IconTint,
+                color = if (state.isWaitingForConfirmation) Color(0xFFFFA000) else IconTint,
                 textAlign = TextAlign.Center
             )
+
+            if (state.isWaitingForConfirmation) {
+                Spacer(modifier = Modifier.height(16.dp))
+                LinearProgressIndicator(
+                    modifier = Modifier.width(200.dp),
+                    color = Color(0xFFFFA000)
+                )
+            }
         }
 
         // Pointer Visuals (Circles under fingers)
@@ -121,8 +155,8 @@ fun DeafBlindScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            BottomIcon(Icons.Default.Swipe, "SWIPE")
-            BottomIcon(Icons.Default.TouchApp, "TAP")
+            BottomIcon(Icons.Default.Swipe, stringResource(R.string.swipe))
+            BottomIcon(Icons.Default.TouchApp, stringResource(R.string.tap))
         }
     }
 }
@@ -206,7 +240,7 @@ private fun DeafBlindScreenPreview() {
                     }
                 },
                 incomingActionDispatcher = IncomingActionDispatcher(),
-                context = ctx,
+                hapticEngine = AndroidHapticEngine(ctx),
             )
         }
         DeafBlindScreen(vm)

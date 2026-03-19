@@ -53,9 +53,9 @@ dependencies {
     implementation(project(":design-system"))
     implementation(project(":feature:deafblind"))
     implementation(project(":feature:pairing"))
-    implementation(project(":infrastructure:infra-fcm"))
     implementation(project(":infrastructure:infra-storage"))
     implementation(project(":infrastructure:infra-qr"))
+    implementation(project(":infrastructure:infra-localnetwork"))
 
     // Core (if needed directly, otherwise transitive)
     implementation(project(":core"))

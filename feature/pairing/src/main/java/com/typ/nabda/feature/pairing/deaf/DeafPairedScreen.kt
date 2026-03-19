@@ -1,6 +1,8 @@
 package com.typ.nabda.feature.pairing.deaf
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.typ.nabda.feature.pairing.R
 import com.typ.nabda.feature.pairing.common.PairingSuccessContent
 
 @Composable
@@ -9,7 +11,7 @@ fun DeafPairedScreen(
 ) {
     PairingSuccessContent(
         onFinish = onFinish,
-        buttonText = "Finish Setup"
+        buttonText = stringResource(R.string.finish_setup)
     )
 }
 

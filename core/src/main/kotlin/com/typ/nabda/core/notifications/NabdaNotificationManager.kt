@@ -75,7 +75,7 @@ class NabdaNotificationManagerImpl(
 
         val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(android.R.drawable.ic_dialog_alert) // Placeholder icon
-            .setContentTitle("Nabda Alert")
+            .setContentTitle("NABDA")
             .setContentText(actionName)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)

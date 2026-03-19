@@ -25,6 +25,7 @@ android {
 
 dependencies {
     implementation(project(":core"))
+    implementation(project(":design-system"))
     implementation(project(":infrastructure:infra-localnetwork"))
 
     // Ktor Client

@@ -10,7 +10,7 @@ import java.util.Locale
 class LocationGeocoder(private val context: Context) {
 
     suspend fun geocode(snapshot: LocationSnapshot?): String = withContext(Dispatchers.IO) {
-        if (snapshot == null) return@withContext "Location unavailable"
+        if (snapshot == null) return@withContext context.getString(R.string.location_unavailable)
 
         try {
             val geocoder = Geocoder(context, Locale.getDefault())
@@ -26,10 +26,10 @@ class LocationGeocoder(private val context: Context) {
                     .filter { it.isNotBlank() }
                     .joinToString(", ")
             } else {
-                "Unknown Location"
+                context.getString(R.string.unknown_location)
             }
         } catch (e: Exception) {
-            "Location unavailable"
+            context.getString(R.string.location_unavailable)
         }
     }
 }

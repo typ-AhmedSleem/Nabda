@@ -1,104 +1,170 @@
 package com.typ.nabda.feature.deafblind
 
-import android.content.Context
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.typ.nabda.core.actions.ActionMapper
 import com.typ.nabda.core.common.NabdaResult
 import com.typ.nabda.core.dispatcher.SignalDispatcher
-import com.typ.nabda.core.gestures.GestureClassifier
-import com.typ.nabda.core.messaging.ActionHandler
+import com.typ.nabda.core.haptic.HapticEngine
 import com.typ.nabda.core.messaging.IncomingActionDispatcher
 import com.typ.nabda.core.model.Action
 import com.typ.nabda.core.model.GestureInput
 import com.typ.nabda.core.model.GestureType
-import com.typ.nabda.feature.deafblind.localserver.LocalServerService
+import com.typ.nabda.core.model.HapticEnginePattern
+import com.typ.nabda.designsystem.UiText
+import com.typ.nabda.infrastructure.localnetwork.server.LocalServerRegistry
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.koin.core.component.KoinComponent
 
 data class DeafBlindUiState(
-    val lastAction: Action? = null,
-    val feedbackMessage: String = "Waiting for action...",
-    val isSending: Boolean = false,
     val pointers: Map<Int, Offset> = emptyMap(),
+    val feedbackMessage: UiText = UiText.StringResource(R.string.ready),
+    val isWaitingForConfirmation: Boolean = false,
+    val connectedClientsCount: Int = 0,
 )
 
 class DeafBlindViewModel(
     private val signalDispatcher: SignalDispatcher,
-    context: Context,
-    incomingActionDispatcher: IncomingActionDispatcher,
-) : ViewModel(), ActionHandler, KoinComponent {
+    private val hapticEngine: HapticEngine,
+    private val incomingActionDispatcher: IncomingActionDispatcher,
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DeafBlindUiState())
     val uiState: StateFlow<DeafBlindUiState> = _uiState.asStateFlow()
 
+    private var pendingAction: Action? = null
+    private var confirmationJob: Job? = null
+
     init {
-        LocalServerService.start(context)
-
-        // Observe incoming actions from both FCM and Local Server
-        incomingActionDispatcher.actions
-            .onEach { onActionReceived(it) }
-            .launchIn(viewModelScope)
-    }
-
-    override fun onActionReceived(action: Action) {
-        _uiState.value = _uiState.value.copy(
-            lastAction = action,
-            feedbackMessage = "REMOTE ACTION: ${action.name}"
-        )
+        // Observe connected clients from LocalServerRegistry
+        viewModelScope.launch {
+            while (true) {
+                val count = LocalServerRegistry.activeServer?.getConnectedClientsCount() ?: 0
+                _uiState.update { it.copy(connectedClientsCount = count) }
+                delay(2000)
+            }
+        }
     }
 
     fun onPointersChanged(pointers: Map<Int, Offset>) {
-        _uiState.value = _uiState.value.copy(pointers = pointers)
+        _uiState.update { it.copy(pointers = pointers) }
     }
 
     fun onGestureInput(input: GestureInput) {
-        val gesture = GestureClassifier.classify(input)
-
-        if (gesture == GestureType.UNKNOWN) {
-            _uiState.value = _uiState.value.copy(feedbackMessage = "Unknown Gesture")
+        if (_uiState.value.connectedClientsCount == 0) {
+            _uiState.update { it.copy(feedbackMessage = UiText.StringResource(R.string.not_connected)) }
+            hapticEngine.performHaptic(HapticEnginePattern.NotConnected)
+            viewModelScope.launch {
+                delay(2000)
+                _uiState.update { it.copy(feedbackMessage = UiText.StringResource(R.string.ready)) }
+            }
             return
         }
 
-        val action = ActionMapper.getActionForGesture(gesture)
-        if (action != null) {
-            _uiState.value = _uiState.value.copy(
-                lastAction = action,
-                feedbackMessage = "Detected: ${action.name}",
-                isSending = true
-            )
-
-            sendAction(action)
+        if (_uiState.value.isWaitingForConfirmation) {
+            handleConfirmation(input)
         } else {
-            _uiState.value = _uiState.value.copy(feedbackMessage = "No Action for ${gesture.name}")
+            initiateAction(input)
         }
     }
 
-    private fun sendAction(action: Action) {
-        viewModelScope.launch {
-            when (val result = signalDispatcher.dispatchAction(action)) {
-                is NabdaResult.Success -> {
-                    _uiState.value = _uiState.value.copy(
-                        feedbackMessage = "Sent: ${action.name}",
-                        isSending = false
-                    )
-                }
+    private fun initiateAction(input: GestureInput) {
+        val gesture = mapInputToGesture(input)
+        val action = ActionMapper.getActionForGesture(gesture)
 
-                is NabdaResult.Error -> {
-                    _uiState.value = _uiState.value.copy(
-                        feedbackMessage = "Failed: ${result.exception.message}",
-                        isSending = false
-                    )
-                }
-
-                else -> {}
+        if (action != null) {
+            pendingAction = action
+            _uiState.update {
+                it.copy(
+                    feedbackMessage = UiText.StringResource(R.string.confirm_action_format, action.name),
+                    isWaitingForConfirmation = true
+                )
             }
+            hapticEngine.performHaptic(HapticEnginePattern.ConfirmActionAgain)
+
+            confirmationJob?.cancel()
+            confirmationJob = viewModelScope.launch {
+                delay(5000) // 5 seconds to confirm
+                cancelPendingAction(UiText.StringResource(R.string.timed_out))
+            }
+        }
+    }
+
+    private fun handleConfirmation(input: GestureInput) {
+        val action = pendingAction
+        if (action != null) {
+            val gesture = mapInputToGesture(input)
+            val newAction = ActionMapper.getActionForGesture(gesture)
+            // * Check if same action is performed before confirming
+            if (action.id == newAction?.id) {
+                confirmAction(action)
+            } else {
+                // * Cancel pending action if wrong gesture
+                cancelPendingAction(UiText.StringResource(R.string.wrong_gesture))
+            }
+        }
+    }
+
+    private fun confirmAction(action: Action) {
+        confirmationJob?.cancel()
+        _uiState.update {
+            it.copy(
+                feedbackMessage = UiText.StringResource(R.string.sending),
+                isWaitingForConfirmation = false
+            )
+        }
+
+        viewModelScope.launch {
+            val result = signalDispatcher.dispatchAction(action)
+            if (result is NabdaResult.Success) {
+                _uiState.update { it.copy(feedbackMessage = UiText.StringResource(R.string.sent)) }
+                hapticEngine.performHaptic(HapticEnginePattern.ActionSent)
+            } else {
+                _uiState.update { it.copy(feedbackMessage = UiText.StringResource(R.string.failed)) }
+                hapticEngine.performHaptic(HapticEnginePattern.ActionNotConfirmed)
+            }
+            delay(2000)
+            _uiState.update { it.copy(feedbackMessage = UiText.StringResource(R.string.ready)) }
+        }
+    }
+
+    private fun cancelPendingAction(reason: UiText) {
+        pendingAction = null
+        _uiState.update {
+            it.copy(
+                feedbackMessage = reason,
+                isWaitingForConfirmation = false
+            )
+        }
+        viewModelScope.launch {
+            delay(2000)
+            _uiState.update { it.copy(feedbackMessage = UiText.StringResource(R.string.ready)) }
+        }
+    }
+
+    private fun mapInputToGesture(input: GestureInput): GestureType {
+        return when (input.fingerCount) {
+            1 -> when (input.direction) {
+                com.typ.nabda.core.model.GestureDirection.UP -> GestureType.ONE_FINGER_SWIPE_UP
+                com.typ.nabda.core.model.GestureDirection.DOWN -> GestureType.ONE_FINGER_SWIPE_DOWN
+                com.typ.nabda.core.model.GestureDirection.RIGHT -> GestureType.ONE_FINGER_SWIPE_RIGHT
+                else -> GestureType.UNKNOWN
+            }
+
+            2 -> when (input.direction) {
+                com.typ.nabda.core.model.GestureDirection.UP -> GestureType.TWO_FINGER_SWIPE_UP
+                com.typ.nabda.core.model.GestureDirection.RIGHT -> GestureType.TWO_FINGER_SWIPE_RIGHT
+                else -> GestureType.UNKNOWN
+            }
+
+            3 -> GestureType.THREE_FINGER_SWIPE_DOWN
+            else -> GestureType.UNKNOWN
         }
     }
 }

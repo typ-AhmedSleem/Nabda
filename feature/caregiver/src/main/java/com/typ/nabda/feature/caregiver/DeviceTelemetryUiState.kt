@@ -2,12 +2,6 @@ package com.typ.nabda.feature.caregiver
 
 import androidx.compose.runtime.Immutable
 import com.typ.nabda.core.model.ConnectivitySource
-import com.typ.nabda.feature.caregiver.BatteryLevel.CRITICAL
-import com.typ.nabda.feature.caregiver.BatteryLevel.NORMAL
-import com.typ.nabda.feature.caregiver.BatteryLevel.WARNING
-import com.typ.nabda.feature.caregiver.DeviceStatus.DELAYED
-import com.typ.nabda.feature.caregiver.DeviceStatus.OFFLINE
-import com.typ.nabda.feature.caregiver.DeviceStatus.ONLINE
 
 /**
  * Represents the UI state for the device telemetry information displayed to a caregiver.
@@ -26,9 +20,12 @@ data class DeviceTelemetryUiState(
     val batteryLevel: BatteryLevel,
     val batteryPercentage: Int,
     val isCharging: Boolean,
+    val signalStrength: Int, // 0-4 bars
+    val isSilentMode: Boolean,
     val connectivity: ConnectivitySource,
     val locationLabel: String,
     val lastSeenLabel: String,
+    val rawTimestamp: Long,
 )
 
 /**

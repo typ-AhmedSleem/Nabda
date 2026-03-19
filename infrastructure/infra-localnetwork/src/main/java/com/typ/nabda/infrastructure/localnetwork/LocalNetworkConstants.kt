@@ -6,7 +6,7 @@ package com.typ.nabda.infrastructure.localnetwork
 object LocalNetworkConstants {
     const val SERVER_PORT = 2001
     const val SERVER_HOST = "0.0.0.0"
-    const val SERVICE_TYPE = "_nabda._tcp."
+    const val SERVICE_TYPE = "_nabda._tcp"
     const val SERVICE_NAME = "Nabda Device"
     const val DEMO_AUTH_TOKEN = "DEMO_TOKEN"
 
@@ -28,4 +28,5 @@ object LocalNetworkConstants {
     const val HEARTBEAT_INTERVAL_MS = 10_000L
     const val HEARTBEAT_BACKOFF_MS = 15_000L
     const val MAX_CONSECUTIVE_FAILURES = 3
+    const val TELEMETRY_DELAY = 2500L
 }

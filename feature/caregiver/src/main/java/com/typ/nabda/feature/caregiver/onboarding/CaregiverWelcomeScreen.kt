@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -57,7 +58,7 @@ fun CaregiverWelcomeScreen(
 
         // Headline
         Text(
-            text = "Welcome to Nabda",
+            text = stringResource(R.string.welcome_to_nabda),
             style = TextStyle(
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
@@ -72,7 +73,7 @@ fun CaregiverWelcomeScreen(
 
         // Subtitle
         Text(
-            text = "Nabda helps you stay connected with your loved ones who are deafblind. Receive alerts and monitor their well-being.",
+            text = stringResource(R.string.welcome_subtitle),
             style = TextStyle(
                 fontSize = 18.sp,
                 color = Color(0xFF44474E),
@@ -96,7 +97,7 @@ fun CaregiverWelcomeScreen(
             shape = RoundedCornerShape(32.dp)
         ) {
             Text(
-                text = "Get Started",
+                text = stringResource(R.string.get_started),
                 style = TextStyle(
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,

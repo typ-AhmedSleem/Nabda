@@ -14,4 +14,5 @@ data class Action(
     val name: String,
     val description: String,
     val priority: ActionPriority,
+    val hapticPattern: HapticEnginePattern,
 )

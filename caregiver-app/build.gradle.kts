@@ -2,16 +2,15 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.google.services)
+    // alias(libs.plugins.google.services) // Temporarily disabled to bypass package name mismatch in google-services.json
 }
 
 android {
-    namespace = "com.typ.nabda"
-    compileSdk {
-        version = release(36)
-    }
+    namespace = "com.typ.nabda.caregiver"
+    compileSdk = 36
 
     defaultConfig {
+        applicationId = "com.typ.nabda.caregiver"
         minSdk = 29
         targetSdk = 36
         versionCode = 1
@@ -21,6 +20,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
     compileOptions {
@@ -44,21 +44,23 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.icons)
     implementation(libs.androidx.navigation.compose)
 
     // Koin
     implementation(libs.koin.android)
     implementation(libs.koin.compose)
+    implementation(libs.koin.compose.viewmodel)
 
     // Modules
     implementation(project(":design-system"))
     implementation(project(":feature:caregiver"))
     implementation(project(":feature:pairing"))
-    implementation(project(":infrastructure:infra-fcm"))
     implementation(project(":infrastructure:infra-storage"))
     implementation(project(":infrastructure:infra-qr"))
+    implementation(project(":infrastructure:infra-localnetwork"))
 
-    // Core (if needed directly, otherwise transitive)
+    // Core
     implementation(project(":core"))
 
     testImplementation(libs.junit)
