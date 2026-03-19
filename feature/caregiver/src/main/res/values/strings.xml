@@ -55,4 +55,7 @@
     <string name="continue_label">Continue</string>
     <string name="location_unavailable">Location unavailable</string>
     <string name="unknown_location">Unknown Location</string>
+    <string name="action_sent">Action Sent</string>
+    <string name="action_delivered">Action Delivered</string>
+    <string name="action_not_sent">Action not sent</string>
 </resources>

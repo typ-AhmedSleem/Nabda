@@ -1,10 +1,10 @@
 package com.typ.nabda.core.dispatcher
 
 import com.typ.nabda.core.common.NabdaResult
-import com.typ.nabda.core.model.Action
+import com.typ.nabda.core.model.RequestedAction
 
 interface SignalDispatcher {
-    suspend fun dispatchAction(action: Action): NabdaResult<Unit>
+    suspend fun dispatchAction(requestedAction: RequestedAction): NabdaResult<Unit>
 }
 
 /*class SignalDispatcherImpl(

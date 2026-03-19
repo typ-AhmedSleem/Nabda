@@ -49,8 +49,8 @@ import com.typ.nabda.core.dispatcher.SignalDispatcher
 import com.typ.nabda.core.gestures.GestureClassifier
 import com.typ.nabda.core.haptic.AndroidHapticEngine
 import com.typ.nabda.core.messaging.IncomingActionDispatcher
-import com.typ.nabda.core.model.Action
 import com.typ.nabda.core.model.GestureInput
+import com.typ.nabda.core.model.RequestedAction
 import org.koin.compose.viewmodel.koinViewModel
 
 // Design colors
@@ -235,7 +235,7 @@ private fun DeafBlindScreenPreview() {
         val vm = remember {
             DeafBlindViewModel(
                 signalDispatcher = object : SignalDispatcher {
-                    override suspend fun dispatchAction(action: Action): NabdaResult<Unit> {
+                    override suspend fun dispatchAction(requestedAction: RequestedAction): NabdaResult<Unit> {
                         return NabdaResult.Success(Unit)
                     }
                 },

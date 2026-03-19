@@ -1,6 +1,8 @@
 package com.typ.nabda.feature.caregiver
 
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -28,6 +30,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -42,7 +46,9 @@ class CaregiverViewModel(
     private val discoveryManager: DeviceDiscoveryManager,
     private val heartbeatPoller: HeartbeatPoller,
     private val transport: TelemetryTransport,
-) : ViewModel() {
+) : ViewModel(), KoinComponent {
+
+    private val context: Context by lazy { get<Context>() }
 
     enum class CaregiverNavigationEvent {
         NavigateToDiscovery
@@ -149,8 +155,13 @@ class CaregiverViewModel(
                         timestamp = System.currentTimeMillis(),
                         correlationId = UUID.randomUUID().toString(),
                     )
-                    transport.sendAction(payload)
-                    // We could update local UI history here if needed
+                    val ack = transport.sendAction(payload)
+                    if (ack.success) {
+                        showToast(context.getString(R.string.action_delivered))
+                    } else {
+                        showToast(context.getString(R.string.action_not_sent))
+                    }
+                    Log.i("NABDA_CaregiverViewModel", "sendAction: ACK='$ack'.")
                 } else {
                     // Fallback to existing SignalDispatcher (Requires pairing)
                     Log.w("CaregiverViewModel", "No local device found for direct action")
@@ -166,6 +177,10 @@ class CaregiverViewModel(
             "voice" -> GestureAction.FALL_ALERT
             else -> GestureAction.HELP_REQUEST
         }
+    }
+
+    private fun showToast(msg: String) {
+        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
     }
 
     // History states

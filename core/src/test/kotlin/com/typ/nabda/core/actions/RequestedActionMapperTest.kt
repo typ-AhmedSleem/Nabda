@@ -6,7 +6,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
 
-class ActionMapperTest {
+class RequestedActionMapperTest {
 
     @Test
     fun getActionForGesture_twoFingerSwipeUp_returnsFoodRequest() {
