@@ -1,4 +1,4 @@
-package com.typ.nabda.core.common
+package com.typ.nabda.designsystem
 
 import android.content.Context
 import androidx.annotation.StringRes
