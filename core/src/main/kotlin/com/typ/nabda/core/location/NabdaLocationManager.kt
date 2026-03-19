@@ -8,8 +8,11 @@ import android.location.Geocoder
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
+import com.google.android.gms.location.CurrentLocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
 import com.typ.nabda.core.model.LocationSnapshot
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.Locale
@@ -26,19 +29,13 @@ class NabdaLocationManager(private val context: Context) {
     private var lastKnownLocationRetrieveTime = 0L
 
     @SuppressLint("MissingPermission")
-    suspend fun lastKnownLocation(): LocationSnapshot? {
-        val now = System.currentTimeMillis()
-        val cached = lastKnownLocation
-        if (cached != null && (now - lastKnownLocationRetrieveTime) < 60_000) {
-            Log.d("Nabda_LocationManager", "Retrieved location from cache.")
-            return LocationSnapshot(
-                latitude = cached.latitude,
-                longitude = cached.longitude,
-                accuracyMeters = cached.accuracy
-            )
-        }
-
+    suspend fun currentLocation(): LocationSnapshot? {
         return suspendCancellableCoroutine { continuation ->
+            val cts = CancellationTokenSource()
+            continuation.invokeOnCancellation {
+                cts.cancel()
+            }
+
             try {
                 val locationSettingsRequest = LocationSettingsRequest
                     .Builder()
@@ -47,13 +44,17 @@ class NabdaLocationManager(private val context: Context) {
                 locationSettings
                     .checkLocationSettings(locationSettingsRequest)
                     .addOnSuccessListener {
+                        val currentLocationRequest = CurrentLocationRequest.Builder()
+                            .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                            .build()
+
                         locationManager
-                            .lastLocation
+                            .getCurrentLocation(currentLocationRequest, cts.token)
                             .addOnSuccessListener { location ->
                                 if (location != null) {
-                                    Log.d("Nabda_LocationManager", "Retrieved location from system.")
+                                    Log.d("Nabda_LocationManager", "Retrieved current location from system.")
                                     lastKnownLocation = location
-                                    lastKnownLocationRetrieveTime = now
+                                    lastKnownLocationRetrieveTime = System.currentTimeMillis()
                                     continuation.resume(
                                         LocationSnapshot(
                                             latitude = location.latitude,
@@ -62,12 +63,12 @@ class NabdaLocationManager(private val context: Context) {
                                         )
                                     )
                                 } else {
-                                    Log.w("Nabda_LocationManager", "Location is null.")
+                                    Log.w("Nabda_LocationManager", "Current location is null.")
                                     continuation.resume(null)
                                 }
                             }
                             .addOnFailureListener {
-                                Log.w("NabdaLocationManager", "Failed to retrieve location from system. Reason='${it.message}'.")
+                                Log.w("Nabda_LocationManager", "Failed to retrieve current location. Reason='${it.message}'.")
                                 it.printStackTrace()
                                 continuation.resume(null)
                             }
