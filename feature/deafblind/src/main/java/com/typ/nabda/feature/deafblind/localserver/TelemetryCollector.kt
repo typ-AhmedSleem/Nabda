@@ -3,13 +3,13 @@ package com.typ.nabda.feature.deafblind.localserver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.media.AudioManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.wifi.WifiManager
 import android.os.BatteryManager
 import android.util.Log
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
-import com.google.android.gms.tasks.Tasks
+import com.typ.nabda.core.location.NabdaLocationManager
 import com.typ.nabda.core.model.ConnectivitySource
 import com.typ.nabda.core.model.LocationSnapshot
 import com.typ.nabda.core.model.TelemetryHeartbeatPayload
@@ -23,9 +23,10 @@ import kotlinx.coroutines.withContext
  */
 class TelemetryCollector(private val context: Context) {
 
-    private val fusedLocationClient by lazy {
-        LocationServices.getFusedLocationProviderClient(context)
-    }
+    private val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    private val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+    private val locationManager = NabdaLocationManager(context)
 
     /**
      * Assembles a complete [TelemetryHeartbeatPayload] snapshot.
@@ -47,14 +48,13 @@ class TelemetryCollector(private val context: Context) {
 
     private fun getSignalStrength(): Int? {
         return try {
-            val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            val network = cm.activeNetwork ?: return null
-            val caps = cm.getNetworkCapabilities(network) ?: return null
+            val network = connectivityManager.activeNetwork ?: return null
+            val caps = connectivityManager.getNetworkCapabilities(network) ?: return null
 
             if (caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-                val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as android.net.wifi.WifiManager
+
                 val info = wifiManager.connectionInfo
-                android.net.wifi.WifiManager.calculateSignalLevel(info.rssi, 5) // 0-4
+                WifiManager.calculateSignalLevel(info.rssi, 5) // 0-4
             } else if (caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
                 val tm = context.getSystemService(Context.TELEPHONY_SERVICE) as android.telephony.TelephonyManager
                 tm.signalStrength?.level ?: 0
@@ -66,8 +66,8 @@ class TelemetryCollector(private val context: Context) {
 
     private fun getIsSilentMode(): Boolean? {
         return try {
-            val am = context.getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
-            am.ringerMode != android.media.AudioManager.RINGER_MODE_NORMAL
+
+            audioManager.ringerMode != AudioManager.RINGER_MODE_NORMAL
         } catch (e: Exception) {
             null
         }
@@ -108,9 +108,8 @@ class TelemetryCollector(private val context: Context) {
 
     private fun getConnectivitySource(): ConnectivitySource {
         return try {
-            val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            val network = cm.activeNetwork ?: return ConnectivitySource.NONE
-            val caps = cm.getNetworkCapabilities(network) ?: return ConnectivitySource.NONE
+            val network = connectivityManager.activeNetwork ?: return ConnectivitySource.NONE
+            val caps = connectivityManager.getNetworkCapabilities(network) ?: return ConnectivitySource.NONE
             when {
                 caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> ConnectivitySource.WIFI
                 caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> ConnectivitySource.CELLULAR
@@ -124,25 +123,11 @@ class TelemetryCollector(private val context: Context) {
 
     // ── Location ────────────────────────────────────────────────────────────
 
-    @Suppress("MissingPermission")
-    private fun getLocation(): LocationSnapshot? {
+    private suspend fun getLocation(): LocationSnapshot? {
         return try {
-            val task = fusedLocationClient.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, null)
-            val location = Tasks.await(task) ?: return null
-            if (location.accuracy > 50f) {
-                Log.d(TAG_SERVER, "Location accuracy ${location.accuracy}m exceeds 50m threshold, skipping")
-                return null
-            }
-            LocationSnapshot(
-                latitude = location.latitude,
-                longitude = location.longitude,
-                accuracyMeters = location.accuracy,
-            )
-        } catch (e: SecurityException) {
-            Log.w(TAG_SERVER, "Location permission not granted", e)
-            null
+            locationManager.currentLocation()
         } catch (e: Exception) {
-            Log.w(TAG_SERVER, "Failed to read location", e)
+            Log.w(TAG_SERVER, "Failed to read location via Locus", e)
             null
         }
     }
