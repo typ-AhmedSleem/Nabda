@@ -14,13 +14,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.typ.nabda.feature.pairing.R
 
 @Composable
 fun PairingInProgressContent(
     modifier: Modifier = Modifier,
-    text: String = "Pairing in progress...",
+    text: String = stringResource(R.string.pairing_in_progress),
 ) {
     Column(
         modifier = modifier
