@@ -41,10 +41,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -56,6 +58,8 @@ import com.typ.nabda.core.model.ConnectivitySource
 import com.typ.nabda.core.model.SupportedAction
 import com.typ.nabda.designsystem.theme.NabdaTheme
 import org.koin.compose.viewmodel.koinViewModel
+import org.ocpsoft.prettytime.PrettyTime
+import java.util.Date
 
 // Target Design Colors
 private val DarkBlue = Color(0xFF326680)
@@ -103,14 +107,8 @@ fun CaregiverScreen(
 // ... helper to format relative time
 @Composable
 fun formatRelativeTime(timestamp: Long): String {
-    // todo: use prettytime lib
-    val now = System.currentTimeMillis()
-    val diff = now - timestamp
-    return when {
-        diff < 60000 -> "JUST NOW"
-        diff < 3600000 -> "UPDATED ${diff / 60000} MINS AGO"
-        else -> "UPDATED LONGER AGO"
-    }
+    val prettyTime = remember { PrettyTime() }
+    return prettyTime.format(Date(timestamp))
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -129,7 +127,7 @@ fun CaregiverDashboardContent(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "Nabda Caregiver",
+                        text = stringResource(R.string.nabda_caregiver),
                         maxLines = 1
                     )
                 }
@@ -157,25 +155,25 @@ fun CaregiverDashboardContent(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "PAIRED DEVICE METRICS",
+                    text = stringResource(R.string.paired_device_metrics),
                     style = TextStyle(
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = LabelGray
                     )
                 )
-                StatusBadge(text = if (telemetryState != null) formatRelativeTime(telemetryState.rawTimestamp) else "OFFLINE")
+                StatusBadge(text = if (telemetryState != null) formatRelativeTime(telemetryState.rawTimestamp) else stringResource(R.string.offline))
             }
 
             val isCharging = telemetryState?.isCharging == true
             MetricGridCard(
                 modifier = Modifier.fillMaxWidth(),
                 icon = Icons.Default.BatteryStd,
-                topLabel = if (isCharging) "CHARGING" else "DISCHARGING",
+                topLabel = if (isCharging) stringResource(R.string.charging) else stringResource(R.string.discharging),
                 topLabelColor = if (isCharging) PillGreenText else Color.Red,
                 topLabelBg = if (isCharging) PillGreenBg else Color(0xFFFFEBEE),
                 value = "${telemetryState?.batteryPercentage ?: 0}%",
-                bottomLabel = "BATTERY LIFE",
+                bottomLabel = stringResource(R.string.battery_life),
                 valueSize = 34.sp
             )
 
@@ -186,32 +184,32 @@ fun CaregiverDashboardContent(
             ) {
                 val signalBars = (telemetryState?.signalStrength ?: 0)
                 val signalLabel = when (signalBars) {
-                    4 -> "EXCELLENT"
-                    3 -> "GOOD"
-                    2 -> "FAIR"
-                    1 -> "POOR"
-                    else -> "NONE"
+                    4 -> stringResource(R.string.excellent)
+                    3 -> stringResource(R.string.good)
+                    2 -> stringResource(R.string.fair)
+                    1 -> stringResource(R.string.poor)
+                    else -> stringResource(R.string.none)
                 }
 
                 MetricGridCard(
                     modifier = Modifier.weight(1f),
                     icon = if (telemetryState?.connectivity == ConnectivitySource.WIFI) Icons.Default.Wifi else Icons.Default.SignalCellularAlt,
-                    topLabel = "STABLE",
+//                    topLabel = stringResource(R.string.stable),
                     topLabelColor = PillBlueText,
                     topLabelBg = PillBlueBg,
-                    value = telemetryState?.connectivity?.name ?: "NONE",
-                    bottomLabel = "NETWORK SOURCE",
+                    value = telemetryState?.connectivity?.name ?: stringResource(R.string.none),
+                    bottomLabel = stringResource(R.string.network_source),
                     valueSize = 34.sp
                 )
 
                 MetricGridCard(
                     modifier = Modifier.weight(1f),
                     icon = Icons.Default.SignalCellularAlt,
-                    topLabel = "$signalBars/4 BARS",
+//                    topLabel = stringResource(R.string.bars_format, signalBars),
                     topLabelColor = IconColor,
                     topLabelBg = IconCircleColor,
                     value = signalLabel,
-                    bottomLabel = "Signal Strength",
+                    bottomLabel = stringResource(R.string.signal_strength),
                     valueSize = 26.sp
                 )
             }
@@ -220,11 +218,11 @@ fun CaregiverDashboardContent(
                 icon = Icons.Default.LocationOn,
                 modifier = Modifier.fillMaxWidth(),
 //                    topIcon = Icons.AutoMirrored.Filled.OpenInNew,
-                value = telemetryState?.locationLabel ?: "UNKNOWN",
+                value = telemetryState?.locationLabel ?: stringResource(R.string.unknown),
                 topLabelColor = DarkBlue,
-                topLabel = if (telemetryState != null) formatRelativeTime(telemetryState.rawTimestamp) else "OFFLINE",
+                topLabel = if (telemetryState != null) formatRelativeTime(telemetryState.rawTimestamp) else stringResource(R.string.offline),
                 topLabelBg = DarkBlue.copy(0.1f),
-                bottomLabel = "LOCATION",
+                bottomLabel = stringResource(R.string.location),
                 valueSize = 24.sp
             )
 
@@ -240,8 +238,8 @@ fun CaregiverDashboardContent(
                     topLabelColor = if (notifGranted) GreenText else {
                         MaterialTheme.colorScheme.error
                     },
-                    value = if (notifGranted) "ALLOWED" else "DENIED",
-                    bottomLabel = "NOTIFICATIONS",
+                    value = if (notifGranted) stringResource(R.string.allowed) else stringResource(R.string.denied),
+                    bottomLabel = stringResource(R.string.notifications),
                     valueSize = 24.sp
                 )
                 val isDeafSilent = telemetryState?.isSilentMode == true
@@ -254,8 +252,8 @@ fun CaregiverDashboardContent(
                     } else {
                         GreenText
                     },
-                    value = if (isDeafSilent) "SILENT" else "NORMAL",
-                    bottomLabel = "DEAF DEVICE MODE",
+                    value = if (isDeafSilent) stringResource(R.string.silent) else stringResource(R.string.normal),
+                    bottomLabel = stringResource(R.string.deaf_device_mode),
                     valueSize = 24.sp
                 )
             }
@@ -303,7 +301,7 @@ fun SystemActiveCard(isConnected: Boolean, localStatus: DeviceStatus) {
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = if (localStatus == DeviceStatus.ONLINE || isConnected) "SYSTEM ACTIVE" else "SYSTEM OFFLINE",
+                    text = if (localStatus == DeviceStatus.ONLINE || isConnected) stringResource(R.string.system_active) else stringResource(R.string.system_offline),
                     style = TextStyle(
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Black,
@@ -318,7 +316,7 @@ fun SystemActiveCard(isConnected: Boolean, localStatus: DeviceStatus) {
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "Connected to NABDA Device",
+                        text = stringResource(R.string.connected_to_nabda_device),
                         style = TextStyle(
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
