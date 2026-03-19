@@ -307,7 +307,10 @@ fun HelpCard(modifier: Modifier = Modifier) {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(
+    showBackground = true,
+    locale = "ar"
+)
 @Composable
 fun PairingScannerScreenScanningPreview() {
     NabdaTheme {
