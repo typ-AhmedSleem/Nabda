@@ -263,7 +263,7 @@ fun MetricsScreen(
                         .background(TargetGreen, CircleShape)
                 )
                 Text(
-                    text = stringResource(R.string.connected_to_nabda_device),
+                    text = connectedHost?.removePrefix("http://") ?: stringResource(R.string.connected_to_nabda_device),
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
@@ -272,6 +272,7 @@ fun MetricsScreen(
                     )
                 )
             }
+            Spacer(Modifier.height(8.dp))
             Text(
                 text = if (isConnected) {
                     stringResource(R.string.welcome_to_nabda)
@@ -471,7 +472,7 @@ fun ActionsScreenContent(
             .fillMaxSize()
             .padding(horizontal = 24.dp)
     ) {
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(24.dp))
         Text(
             text = stringResource(R.string.quick_actions_title),
             style = MaterialTheme.typography.titleLarge.copy(
@@ -480,6 +481,7 @@ fun ActionsScreenContent(
                 color = Color(0xFF3C3228)
             )
         )
+        Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = stringResource(R.string.quick_actions_subtitle),
             style = MaterialTheme.typography.titleLarge.copy(

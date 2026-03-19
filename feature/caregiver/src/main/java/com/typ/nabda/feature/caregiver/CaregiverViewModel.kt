@@ -129,7 +129,7 @@ class CaregiverViewModel(
         viewModelScope.launch {
             try {
                 // If we have a local host, send it directly via HTTP
-                if (discoveryManager.discoveredHost.value != null) {
+                if (connectedHost.value != null) {
                     val payload = CaregiverActionPayload(
                         actionId = caregiverAction.id,
                         timestamp = System.currentTimeMillis(),
