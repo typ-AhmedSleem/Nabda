@@ -5,6 +5,7 @@
     <string name="no_history_available">No history available</string>
     <string name="paired_device_metrics">PAIRED DEVICE METRICS</string>
     <string name="quick_actions">QUICK ACTIONS</string>
+    <string name="caregiver_actions">Caregiver Actions</string>
     <string name="offline">OFFLINE</string>
     <string name="just_now">JUST NOW</string>
     <string name="updated_mins_ago">UPDATED %1$d MINS AGO</string>
@@ -59,4 +60,23 @@
     <string name="action_sent">Action Sent</string>
     <string name="action_delivered">Action Delivered</string>
     <string name="action_not_sent">Action not sent</string>
+
+    <!-- Tabs -->
+    <string name="tab_metrics">Metrics</string>
+    <string name="tab_actions">Actions</string>
+    <string name="tab_history">History</string>
+
+    <!-- Quick Actions -->
+    <string name="quick_actions_title">Quick Actions</string>
+    <string name="quick_actions_subtitle">Instant communication for essential care needs.</string>
+    <string name="action_food_ready_title">Food is ready</string>
+    <string name="action_food_ready_desc">Notify that a meal is served and waiting.</string>
+    <string name="action_come_closer_title">Come closer</string>
+    <string name="action_come_closer_desc">Request presence in the immediate area.</string>
+    <string name="action_are_you_sick_title">Are you sick?</string>
+    <string name="action_are_you_sick_desc">Immediate wellness check inquiry for the patient.</string>
+    <string name="action_do_you_want_this_title">Do you want this?</string>
+    <string name="action_do_you_want_this_desc">Confirm preference for an item or activity.</string>
+    <string name="action_im_coming_title">I\'m coming</string>
+    <string name="action_im_coming_desc">Signal that assistance is on the way.</string>
 </resources>

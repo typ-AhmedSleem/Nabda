@@ -55,4 +55,23 @@
     <string name="continue_label">كمل</string>
     <string name="location_unavailable">المكان مش متاح</string>
     <string name="unknown_location">مكان مش معروف</string>
+
+    <!-- Tabs -->
+    <string name="tab_metrics">الحالة</string>
+    <string name="tab_actions">الإجراءات</string>
+    <string name="tab_history">السجل</string>
+
+    <!-- Quick Actions -->
+    <string name="quick_actions_title">إجراءات سريعة</string>
+    <string name="quick_actions_subtitle">تواصل فوري للحاجات الأساسية.</string>
+    <string name="action_food_ready_title">الأكل جاهز</string>
+    <string name="action_food_ready_desc">عرفهم إن الأكل محطوط ومستني.</string>
+    <string name="action_come_closer_title">تعالى هنا</string>
+    <string name="action_come_closer_desc">اطلب منهم ييجوا جنبك دلوقتي.</string>
+    <string name="action_are_you_sick_title">أنت تعبان؟</string>
+    <string name="action_are_you_sick_desc">اسأل واطمن على حالة المريض فوراً.</string>
+    <string name="action_do_you_want_this_title">عايز دي؟</string>
+    <string name="action_do_you_want_this_desc">اتأكد لو محتاج حاجة أو نشاط معين.</string>
+    <string name="action_im_coming_title">أنا جاي</string>
+    <string name="action_im_coming_desc">عرفهم إن المساعدة في الطريق.</string>
 </resources>
