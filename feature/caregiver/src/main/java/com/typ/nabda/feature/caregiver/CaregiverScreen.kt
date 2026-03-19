@@ -799,7 +799,7 @@ fun CaregiverDashboardPreview() {
     }
 }
 
-@Preview
+@Preview(locale = "ar")
 @Composable
 fun MetricsScreenPreview() {
     NabdaTheme {
