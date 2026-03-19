@@ -4,6 +4,7 @@
     <string name="history">History</string>
     <string name="no_history_available">No history available</string>
     <string name="paired_device_metrics">PAIRED DEVICE METRICS</string>
+    <string name="quick_actions">QUICK ACTIONS</string>
     <string name="offline">OFFLINE</string>
     <string name="just_now">JUST NOW</string>
     <string name="updated_mins_ago">UPDATED %1$d MINS AGO</string>
