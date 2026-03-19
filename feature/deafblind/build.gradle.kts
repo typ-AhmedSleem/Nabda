@@ -25,6 +25,7 @@ android {
 
 dependencies {
     implementation(project(":core"))
+    implementation(project(":design-system"))
     implementation(project(":infrastructure:infra-localnetwork"))
 
     // Ktor Server
@@ -35,7 +36,6 @@ dependencies {
     implementation(libs.ktor.serialization.kotlinx.json)
 
     implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.play.services.location)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.runtime)
