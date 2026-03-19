@@ -1,8 +1,13 @@
 package com.typ.nabda.infrastructure.localnetwork.server
 
+import android.util.Log
 import com.typ.nabda.core.model.TelemetryHeartbeatPayload
 import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants
+import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants.TAG_SERVER
+import com.typ.nabda.infrastructure.localnetwork.model.ActionAckPayload
 import com.typ.nabda.infrastructure.localnetwork.model.ActionPayload
+import com.typ.nabda.infrastructure.localnetwork.model.CaregiverActionPayload
+import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.install
 import io.ktor.server.cio.CIO
@@ -11,7 +16,10 @@ import io.ktor.server.engine.EmbeddedServer
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.origin
+import io.ktor.server.request.receive
+import io.ktor.server.response.respond
 import io.ktor.server.routing.get
+import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import io.ktor.server.websocket.DefaultWebSocketServerSession
 import io.ktor.server.websocket.WebSockets
@@ -25,6 +33,8 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.isActive
 import kotlinx.serialization.json.Json
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 /**
  * Embedded Ktor server that broadcasts telemetry and actions to connected Caregiver apps.
@@ -39,6 +49,7 @@ class LocalKtorServer(
     private val clients = ConcurrentHashMap<String, DefaultWebSocketServerSession>()
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
+    @OptIn(ExperimentalUuidApi::class)
     fun start() {
         server = embeddedServer(CIO, port = port) {
             install(ContentNegotiation) {
@@ -70,6 +81,7 @@ class LocalKtorServer(
                         }
                     } catch (e: Exception) {
                         // Log or handle connection issues
+                        e.printStackTrace()
                     } finally {
                         clients.remove(clientId)
                         onClientDisconnected(clientId)
@@ -78,6 +90,34 @@ class LocalKtorServer(
 
                 get("/status") {
                     // Simple health check
+                }
+
+                // ── POST /action ────────────────────────────────────────────────
+                post("/action") {
+                    Log.d(TAG_SERVER, "Received /action request")
+                    val correlationId = Uuid.random().toString()
+                    try {
+                        val actionPayload = call.receive<CaregiverActionPayload>()
+                        onActionReceived(actionPayload.actionId)
+                        call.respond(
+                            status = HttpStatusCode.OK,
+                            message = ActionAckPayload(
+                                correlationId = correlationId,
+                                success = true,
+                                message = "Received '${actionPayload.actionId}' successfully."
+                            )
+                        )
+                    } catch (e: Exception) {
+                        Log.w(TAG_SERVER, "Bad request on /action", e)
+                        call.respond(
+                            status = HttpStatusCode.BadRequest,
+                            message = ActionAckPayload(
+                                success = false,
+                                correlationId = correlationId,
+                                message = "Bad request on '/action'."
+                            )
+                        )
+                    }
                 }
             }
         }.start(wait = false)
