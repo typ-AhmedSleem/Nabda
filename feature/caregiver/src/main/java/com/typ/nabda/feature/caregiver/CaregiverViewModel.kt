@@ -44,11 +44,31 @@ class CaregiverViewModel(
     private val transport: TelemetryTransport,
 ) : ViewModel() {
 
+    enum class CaregiverNavigationEvent {
+        NavigateToDiscovery
+    }
+
     // Dashboard states
     val isInternetConnected = MutableStateFlow(true).asStateFlow()
     val isNotificationPermissionGranted = MutableStateFlow(true).asStateFlow()
     val isCameraPermissionGranted = MutableStateFlow(true).asStateFlow()
     val isPhoneSilent = MutableStateFlow(false).asStateFlow()
+    val pairingStatus: StateFlow<ConnectionStatus> = LocalClientRegistry.status
+
+    // Navigation events
+    private val _navigationEvents = MutableSharedFlow<CaregiverNavigationEvent>()
+    val navigationEvents = _navigationEvents.asSharedFlow()
+
+    init {
+        // ... (previous init code)
+        viewModelScope.launch {
+            pairingStatus.collect { status ->
+                if (status == ConnectionStatus.IDLE) {
+                    _navigationEvents.emit(CaregiverNavigationEvent.NavigateToDiscovery)
+                }
+            }
+        }
+    }
 
     override fun onCleared() {
         super.onCleared()
@@ -60,7 +80,7 @@ class CaregiverViewModel(
     @OptIn(ExperimentalCoroutinesApi::class)
     val telemetryUiState: StateFlow<DeviceTelemetryUiState?> = combine(
         LocalClientRegistry.telemetry,
-        LocalClientRegistry.status
+        pairingStatus
     ) { localTelemetry, status ->
         if (localTelemetry != null) {
             val deviceStatus = when (status) {
@@ -110,25 +130,6 @@ class CaregiverViewModel(
             lastSeenLabel = "Last seen: $lastSeenLabel",
             rawTimestamp = timestamp
         )
-    }
-
-    // Navigation events
-    private val _navigationEvents = MutableSharedFlow<CaregiverNavigationEvent>()
-    val navigationEvents = _navigationEvents.asSharedFlow()
-
-    init {
-        // ... (previous init code)
-        viewModelScope.launch {
-            LocalClientRegistry.status.collect { status ->
-                if (status == ConnectionStatus.IDLE) {
-                    _navigationEvents.emit(CaregiverNavigationEvent.NavigateToDiscovery)
-                }
-            }
-        }
-    }
-
-    enum class CaregiverNavigationEvent {
-        NavigateToDiscovery
     }
 
     /**
