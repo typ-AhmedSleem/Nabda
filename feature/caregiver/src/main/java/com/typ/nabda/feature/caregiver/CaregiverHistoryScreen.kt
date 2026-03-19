@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.typ.nabda.core.model.ActionPriority
 import com.typ.nabda.core.model.Alert
-import com.typ.nabda.core.model.SupportedAction
+import com.typ.nabda.core.model.CaregiverAction
 import org.koin.compose.viewmodel.koinViewModel
 import org.ocpsoft.prettytime.PrettyTime
 import java.util.Date
@@ -69,8 +69,8 @@ fun CaregiverHistoryScreen(
 @Composable
 fun CaregiverHistoryContent(
     alerts: List<Alert>,
-    selectedFilter: SupportedAction?,
-    onFilterSelected: (SupportedAction?) -> Unit,
+    selectedFilter: CaregiverAction?,
+    onFilterSelected: (CaregiverAction?) -> Unit,
 ) {
     LocalContext.current
     val prettyTime = remember { PrettyTime(Locale.getDefault()) }
@@ -161,7 +161,7 @@ fun CaregiverHistoryPreview() {
                 Alert("help_request", "Help Requested", ActionPriority.NORMAL, System.currentTimeMillis() - 60000),
                 Alert("fall", "Fall Detected", ActionPriority.EMERGENCY, System.currentTimeMillis() - 3600000)
             ),
-            selectedFilter = SupportedAction.HELP_REQUEST,
+            selectedFilter = CaregiverAction.HELP_REQUEST,
             onFilterSelected = {}
         )
     }
@@ -197,14 +197,14 @@ fun FilterChip(
 @Composable
 fun HistoryItem(alert: Alert, prettyTime: PrettyTime) {
     val icon = when (alert.actionId) {
-        SupportedAction.HELP_REQUEST.id -> Icons.Default.BackHand
-        SupportedAction.FALL.id -> Icons.AutoMirrored.Filled.DirectionsWalk
+        CaregiverAction.HELP_REQUEST.id -> Icons.Default.BackHand
+        CaregiverAction.FALL.id -> Icons.AutoMirrored.Filled.DirectionsWalk
         else -> Icons.Default.Notifications // Default
     }
 
     val label = when (alert.actionId) {
-        SupportedAction.HELP_REQUEST.id -> stringResource(R.string.help_requested)
-        SupportedAction.FALL.id -> stringResource(R.string.fall_detected)
+        CaregiverAction.HELP_REQUEST.id -> stringResource(R.string.help_requested)
+        CaregiverAction.FALL.id -> stringResource(R.string.fall_detected)
         else -> alert.actionName.uppercase()
     }
 

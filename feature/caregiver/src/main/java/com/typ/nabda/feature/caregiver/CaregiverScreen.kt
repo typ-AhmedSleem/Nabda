@@ -54,8 +54,8 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.typ.nabda.core.model.CaregiverAction
 import com.typ.nabda.core.model.ConnectivitySource
-import com.typ.nabda.core.model.SupportedAction
 import com.typ.nabda.designsystem.theme.NabdaTheme
 import org.koin.compose.viewmodel.koinViewModel
 import org.ocpsoft.prettytime.PrettyTime
@@ -119,7 +119,7 @@ fun CaregiverDashboardContent(
     notifGranted: Boolean,
     isSilent: Boolean,
     telemetryState: DeviceTelemetryUiState?,
-    onActionClick: (SupportedAction) -> Unit,
+    onActionClick: (CaregiverAction) -> Unit,
 ) {
     Scaffold(
         containerColor = BackgroundColor,

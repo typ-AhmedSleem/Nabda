@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.typ.nabda.core.model.ActionPriority
 import com.typ.nabda.core.model.Alert
-import com.typ.nabda.core.model.SupportedAction
+import com.typ.nabda.core.model.CaregiverAction
 import com.typ.nabda.core.model.TelemetryHeartbeatPayload
 import com.typ.nabda.core.model.TelemetryRepository
 import com.typ.nabda.core.notifications.NabdaNotificationManager
@@ -141,8 +141,8 @@ class CaregiverViewModel(
     /**
      * Sends an action directly to the locally discovered device, bypassing the pairing check.
      */
-    fun sendAction(supportedAction: SupportedAction) {
-        val gesture = mapToGesture(supportedAction.id)
+    fun sendAction(caregiverAction: CaregiverAction) {
+        val gesture = mapToGesture(caregiverAction.id)
 
         viewModelScope.launch {
             try {
@@ -150,7 +150,7 @@ class CaregiverViewModel(
                 if (discoveryManager.discoveredHost.value != null) {
                     val payload = ActionPayload(
                         action = gesture,
-                        title = supportedAction.name,
+                        title = caregiverAction.name,
                         priority = ActionPriority.NORMAL, // Defaulting to normal for manual sends
                         timestamp = System.currentTimeMillis(),
                         correlationId = UUID.randomUUID().toString(),
@@ -185,7 +185,7 @@ class CaregiverViewModel(
 
     // History states
     val alerts: StateFlow<List<Alert>> = notificationManager.alertHistory
-    private val _selectedFilter = MutableStateFlow<SupportedAction?>(null) // null means "All Alerts"
+    private val _selectedFilter = MutableStateFlow<CaregiverAction?>(null) // null means "All Alerts"
     val selectedFilter = _selectedFilter.asStateFlow()
 
     val filteredAlerts: StateFlow<List<Alert>> = combine(alerts, _selectedFilter) { alerts, filter ->
@@ -197,7 +197,7 @@ class CaregiverViewModel(
         initialValue = emptyList()
     )
 
-    fun onFilterSelected(filter: SupportedAction?) {
+    fun onFilterSelected(filter: CaregiverAction?) {
         _selectedFilter.value = filter
     }
 }
