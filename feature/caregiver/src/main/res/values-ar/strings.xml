@@ -13,7 +13,7 @@
     <string name="charging">بيشحن</string>
     <string name="discharging">مفيش شاحن</string>
     <string name="battery_life">حالة البطارية</string>
-    <string name="excellent">ممتاز</string>
+    <string name="excellent">ممتازه</string>
     <string name="good">كويس</string>
     <string name="fair">متوسط</string>
     <string name="poor">ضعيف</string>
@@ -98,7 +98,7 @@
     <string name="infrastructure">الشبكة</string>
     <string name="connected_to_wifi">متصل بالواي فاي</string>
     <string name="data_strength">قوة الإشارة</string>
-    <string name="signal_strength_format">الإشارة %1$s (4G)</string>
+    <string name="signal_strength_format">الإشارة %1$s</string>
     <string name="geofence_position">الموقع الجغرافي</string>
     <string name="located_in_format">موجود في %1$s</string>
 </resources>

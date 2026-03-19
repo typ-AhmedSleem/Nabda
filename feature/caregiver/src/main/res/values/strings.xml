@@ -98,7 +98,7 @@
     <string name="infrastructure">INFRASTRUCTURE</string>
     <string name="connected_to_wifi">Connected to Wi-Fi</string>
     <string name="data_strength">DATA STRENGTH</string>
-    <string name="signal_strength_format">Signal is %1$s (4G)</string>
+    <string name="signal_strength_format">Signal is %1$s</string>
     <string name="geofence_position">Geofence Position</string>
     <string name="located_in_format">Located in %1$s</string>
 </resources>

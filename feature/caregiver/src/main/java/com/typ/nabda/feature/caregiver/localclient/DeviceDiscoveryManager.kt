@@ -37,6 +37,14 @@ class DeviceDiscoveryManager(private val context: Context) {
 
     // ── Public API ──────────────────────────────────────────────────────────
 
+    fun updateDiscoveredHost(host: String, port: Int) {
+        _discoveredHost.value = "http://$host:$port"
+    }
+
+    fun clearDiscoveredHost() {
+        _discoveredHost.value = null
+    }
+
     fun startDiscovery() {
         acquireMulticastLock()
         registerNetworkCallback()
