@@ -39,12 +39,13 @@ import com.typ.nabda.core.model.HapticEnginePattern
 import com.typ.nabda.infrastructure.localnetwork.model.ActionPayload
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import org.koin.compose.koinInject
 
 @Composable
 fun HighPriorityAlertOverlay(
     alert: ActionPayload,
     onReceived: () -> Unit,
-    hapticEngine: HapticEngine = org.koin.compose.koinInject(),
+    hapticEngine: HapticEngine = koinInject(),
 ) {
     // This overlay should trigger continuous vibration and sound
 
