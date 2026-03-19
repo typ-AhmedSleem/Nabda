@@ -3,7 +3,7 @@ package com.typ.nabda.feature.deafblind
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.typ.nabda.core.actions.ActionMapper
+import com.typ.nabda.core.actions.RequestedActionMapper
 import com.typ.nabda.core.common.NabdaResult
 import com.typ.nabda.core.dispatcher.SignalDispatcher
 import com.typ.nabda.core.haptic.HapticEngine
@@ -76,7 +76,7 @@ class DeafBlindViewModel(
 
     private fun initiateAction(input: GestureInput) {
         val gesture = mapInputToGesture(input)
-        val action = ActionMapper.getActionForGesture(gesture)
+        val action = RequestedActionMapper.getActionForGesture(gesture)
 
         if (action != null) {
             pendingRequestedAction = action
@@ -100,7 +100,7 @@ class DeafBlindViewModel(
         val action = pendingRequestedAction
         if (action != null) {
             val gesture = mapInputToGesture(input)
-            val newAction = ActionMapper.getActionForGesture(gesture)
+            val newAction = RequestedActionMapper.getActionForGesture(gesture)
             // * Check if same action is performed before confirming
             if (action.id == newAction?.id) {
                 confirmAction(action)

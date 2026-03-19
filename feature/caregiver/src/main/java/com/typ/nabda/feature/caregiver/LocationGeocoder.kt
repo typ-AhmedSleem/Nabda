@@ -29,6 +29,7 @@ class LocationGeocoder(private val context: Context) {
                 context.getString(R.string.unknown_location)
             }
         } catch (e: Exception) {
+            e.printStackTrace()
             context.getString(R.string.location_unavailable)
         }
     }
