@@ -12,6 +12,7 @@ import com.typ.nabda.core.model.Action
 import com.typ.nabda.core.model.GestureInput
 import com.typ.nabda.core.model.GestureType
 import com.typ.nabda.core.model.HapticEnginePattern
+import com.typ.nabda.designsystem.UiText
 import com.typ.nabda.infrastructure.localnetwork.server.LocalServerRegistry
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -23,7 +24,7 @@ import kotlinx.coroutines.launch
 
 data class DeafBlindUiState(
     val pointers: Map<Int, Offset> = emptyMap(),
-    val feedbackMessage: String = "READY",
+    val feedbackMessage: UiText = UiText.StringResource(R.string.ready),
     val isWaitingForConfirmation: Boolean = false,
     val connectedClientsCount: Int = 0,
 )
@@ -57,11 +58,11 @@ class DeafBlindViewModel(
 
     fun onGestureInput(input: GestureInput) {
         if (_uiState.value.connectedClientsCount == 0) {
-            _uiState.update { it.copy(feedbackMessage = "NOT CONNECTED") }
+            _uiState.update { it.copy(feedbackMessage = UiText.StringResource(R.string.not_connected)) }
             hapticEngine.performHaptic(HapticEnginePattern.NotConnected)
             viewModelScope.launch {
                 delay(2000)
-                _uiState.update { it.copy(feedbackMessage = "READY") }
+                _uiState.update { it.copy(feedbackMessage = UiText.StringResource(R.string.ready)) }
             }
             return
         }
@@ -81,7 +82,7 @@ class DeafBlindViewModel(
             pendingAction = action
             _uiState.update {
                 it.copy(
-                    feedbackMessage = "CONFIRM: ${action.name}?",
+                    feedbackMessage = UiText.StringResource(R.string.confirm_action_format, action.name),
                     isWaitingForConfirmation = true
                 )
             }
@@ -90,7 +91,7 @@ class DeafBlindViewModel(
             confirmationJob?.cancel()
             confirmationJob = viewModelScope.launch {
                 delay(5000) // 5 seconds to confirm
-                cancelPendingAction("TIMED OUT")
+                cancelPendingAction(UiText.StringResource(R.string.timed_out))
             }
         }
     }
@@ -105,7 +106,7 @@ class DeafBlindViewModel(
                 confirmAction(action)
             } else {
                 // * Cancel pending action if wrong gesture
-                cancelPendingAction("WRONG GESTURE")
+                cancelPendingAction(UiText.StringResource(R.string.wrong_gesture))
             }
         }
     }
@@ -114,7 +115,7 @@ class DeafBlindViewModel(
         confirmationJob?.cancel()
         _uiState.update {
             it.copy(
-                feedbackMessage = "SENDING...",
+                feedbackMessage = UiText.StringResource(R.string.sending),
                 isWaitingForConfirmation = false
             )
         }
@@ -122,18 +123,18 @@ class DeafBlindViewModel(
         viewModelScope.launch {
             val result = signalDispatcher.dispatchAction(action)
             if (result is NabdaResult.Success) {
-                _uiState.update { it.copy(feedbackMessage = "SENT ✅") }
+                _uiState.update { it.copy(feedbackMessage = UiText.StringResource(R.string.sent)) }
                 hapticEngine.performHaptic(HapticEnginePattern.ActionSent)
             } else {
-                _uiState.update { it.copy(feedbackMessage = "FAILED ❌") }
+                _uiState.update { it.copy(feedbackMessage = UiText.StringResource(R.string.failed)) }
                 hapticEngine.performHaptic(HapticEnginePattern.ActionNotConfirmed)
             }
             delay(2000)
-            _uiState.update { it.copy(feedbackMessage = "READY") }
+            _uiState.update { it.copy(feedbackMessage = UiText.StringResource(R.string.ready)) }
         }
     }
 
-    private fun cancelPendingAction(reason: String) {
+    private fun cancelPendingAction(reason: UiText) {
         pendingAction = null
         _uiState.update {
             it.copy(
@@ -143,7 +144,7 @@ class DeafBlindViewModel(
         }
         viewModelScope.launch {
             delay(2000)
-            _uiState.update { it.copy(feedbackMessage = "READY") }
+            _uiState.update { it.copy(feedbackMessage = UiText.StringResource(R.string.ready)) }
         }
     }
 

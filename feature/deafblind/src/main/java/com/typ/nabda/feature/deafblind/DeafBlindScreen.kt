@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -85,7 +86,7 @@ fun DeafBlindScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Nabda",
+                text = stringResource(R.string.nabda),
                 style = MaterialTheme.typography.headlineMedium,
                 color = IconTint
             )
@@ -96,7 +97,10 @@ fun DeafBlindScreen(
                 modifier = Modifier.padding(top = 4.dp)
             ) {
                 Text(
-                    text = if (state.connectedClientsCount > 0) "${state.connectedClientsCount} CLIENT(S) CONNECTED" else "NO CLIENTS CONNECTED",
+                    text = if (state.connectedClientsCount > 0) stringResource(
+                        R.string.clients_connected_format,
+                        state.connectedClientsCount
+                    ) else stringResource(R.string.no_clients_connected),
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                     color = Color.White,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
@@ -112,7 +116,7 @@ fun DeafBlindScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = state.feedbackMessage,
+                text = state.feedbackMessage.asString(),
                 style = MaterialTheme.typography.displaySmall.copy(
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 32.sp
@@ -151,8 +155,8 @@ fun DeafBlindScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            BottomIcon(Icons.Default.Swipe, "SWIPE")
-            BottomIcon(Icons.Default.TouchApp, "TAP")
+            BottomIcon(Icons.Default.Swipe, stringResource(R.string.swipe))
+            BottomIcon(Icons.Default.TouchApp, stringResource(R.string.tap))
         }
     }
 }

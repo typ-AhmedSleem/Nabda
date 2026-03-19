@@ -28,10 +28,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.typ.nabda.caregiver.R
 import com.typ.nabda.core.haptic.HapticEngine
 import com.typ.nabda.core.model.HapticEnginePattern
 import com.typ.nabda.infrastructure.localnetwork.model.ActionPayload
@@ -86,7 +88,7 @@ fun HighPriorityAlertOverlay(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Text(
-                    text = "HIGH PRIORITY ALERT",
+                    text = stringResource(R.string.high_priority_alert),
                     style = MaterialTheme.typography.headlineLarge.copy(
                         fontWeight = FontWeight.Black,
                         color = Color.White
@@ -116,7 +118,7 @@ fun HighPriorityAlertOverlay(
                     shape = MaterialTheme.shapes.large
                 ) {
                     Text(
-                        text = "RECEIVED",
+                        text = stringResource(R.string.received),
                         style = TextStyle(
                             color = Color.Red,
                             fontSize = 20.sp,

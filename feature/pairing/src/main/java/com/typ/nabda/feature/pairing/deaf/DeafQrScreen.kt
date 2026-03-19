@@ -18,9 +18,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.typ.nabda.feature.pairing.R
 
 @Composable
 fun DeafQrScreen(
@@ -36,7 +38,7 @@ fun DeafQrScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Scan this QR on Caregiver app to pair or input it manually",
+            text = stringResource(R.string.scan_qr_description),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center
@@ -66,7 +68,7 @@ fun DeafQrScreen(
         ) {
             Text(
                 maxLines = 1,
-                text = "Pair id: ",
+                text = stringResource(R.string.pair_id_label),
                 style = MaterialTheme.typography.bodyMedium,
             )
 
