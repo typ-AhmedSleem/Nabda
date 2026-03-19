@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pair_device">ربط الجهاز</string>
+    <string name="ready_to_pair">جاهز للربط ..</string>
+    <string name="pairing_description">خلي جهازك قريب أو استخدم كود الربط اللي ظاهر على شاشة الجهاز.</string>
+    <string name="pairing_code_label">كود الربط</string>
+    <string name="pairing_code_placeholder">اكتب كود الربط بنفسك</string>
+    <string name="pair">اربط</string>
+    <string name="or_divider">أو</string>
+    <string name="pair_using_qr">اربط باستخدام QR</string>
+    <string name="finish_setup">خلص الإعدادات</string>
+    <string name="scan_qr_description">امسح الكود ده من تطبيق المرافق أو اكتبه بنفسك</string>
+    <string name="pair_id_label">كود الربط: </string>
+    <string name="pairing_in_progress">جاري الربط…</string>
+    <string name="pairing_failed">فشل الربط</string>
+    <string name="pairing_failed_subtitle">حصلت مشكلة وإحنا بنحاول نوصل. اتأكد إن الجهازين متصلين بالإنترنت وحاول تاني.</string>
+    <string name="retry">حاول تاني</string>
+    <string name="pairing_successful">تم الربط بنجاح</string>
+    <string name="connected_now">أنت دلوقتي متصل</string>
+</resources>
