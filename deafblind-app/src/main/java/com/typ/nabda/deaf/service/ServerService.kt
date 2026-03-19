@@ -17,11 +17,9 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import com.typ.nabda.core.model.TelemetryHeartbeatPayload
 import com.typ.nabda.deaf.MainActivity
 import com.typ.nabda.feature.deafblind.localserver.TelemetryCollector
 import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants
-import com.typ.nabda.infrastructure.localnetwork.model.ActionPayload
 import com.typ.nabda.infrastructure.localnetwork.server.LocalKtorServer
 import com.typ.nabda.infrastructure.localnetwork.server.LocalServerRegistry
 import kotlinx.coroutines.CoroutineScope
@@ -62,7 +60,7 @@ class ServerService : Service() {
         private const val ACTION_STOP_SERVER = "com.typ.nabda.ACTION_STOP_SERVER"
         private const val ACTION_START_SERVER = "com.typ.nabda.ACTION_START_SERVER"
 
-        // Simple singleton-like access for the UI to observe state
+        /*// Simple singleton-like access for the UI to observe state
         // In a real app, this would be managed via Koin/Dagger
         var currentInstance: ServerService? = null
             private set
@@ -73,12 +71,12 @@ class ServerService : Service() {
 
         suspend fun broadcastTelemetry(telemetry: TelemetryHeartbeatPayload) {
             LocalServerRegistry.activeServer?.broadcastTelemetry(telemetry)
-        }
+        }*/
     }
 
     override fun onCreate() {
         super.onCreate()
-        currentInstance = this
+//        currentInstance = this
         nsdManager = getSystemService(NSD_SERVICE) as NsdManager
         telemetryCollector = TelemetryCollector(applicationContext)
 
@@ -248,7 +246,7 @@ class ServerService : Service() {
         stopServer()
         releaseMulticastLock()
         unregisterNetworkCallback()
-        currentInstance = null
+//        currentInstance = null
         super.onDestroy()
     }
 
@@ -259,6 +257,7 @@ class ServerService : Service() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
+        // todo: Extract hardcoded strings to strings.xml and localize them to Arabic too.
         val isRunning = ktorServer != null
         val statusTitle = if (isRunning) "Nabda Server: RUNNING" else "Nabda Server: STOPPED"
 
@@ -266,11 +265,11 @@ class ServerService : Service() {
         else if (clientsCount == 0) "Waiting for clients..."
         else "$clientsCount client(s) connected"
 
-        val actionText = if (isRunning) "Stop Server" else "Start Server"
+        if (isRunning) "Stop Server" else "Start Server"
         val actionIntent = Intent(this, ServerService::class.java).apply {
             action = if (isRunning) ACTION_STOP_SERVER else ACTION_START_SERVER
         }
-        val actionPendingIntent = PendingIntent.getService(
+        PendingIntent.getService(
             this, 1, actionIntent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
@@ -281,13 +280,13 @@ class ServerService : Service() {
             .setSmallIcon(android.R.drawable.stat_notify_sync)
             .setOngoing(true)
             .setContentIntent(pendingIntent)
-            .addAction(
-                NotificationCompat.Action.Builder(
-                    if (isRunning) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play,
-                    actionText,
-                    actionPendingIntent
-                ).build()
-            )
+        /*.addAction(
+            NotificationCompat.Action.Builder(
+                if (isRunning) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play,
+                actionText,
+                actionPendingIntent
+            ).build()
+        )*/
 
         return builder.build()
     }
