@@ -5,7 +5,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.Network
@@ -19,6 +18,7 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.typ.nabda.caregiver.MainActivity
+import com.typ.nabda.caregiver.R
 import com.typ.nabda.core.notifications.NabdaNotificationManager
 import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants
 import com.typ.nabda.infrastructure.localnetwork.client.ConnectionStatus
@@ -261,8 +261,8 @@ class CaregiverService : Service(), KoinComponent {
         )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Caregiver Connectivity")
-            .setContentText("Status: ${status.name}")
+            .setContentTitle(getString(R.string.caregiver_connectivity))
+            .setContentText(getString(R.string.connection_status_prefix, getString(status.resId)))
             .setSmallIcon(android.R.drawable.stat_notify_sync)
             .setOngoing(true)
             .setContentIntent(pendingIntent)
@@ -278,7 +278,7 @@ class CaregiverService : Service(), KoinComponent {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "Caregiver Status",
+                getString(R.string.caregiver_status_channel),
                 NotificationManager.IMPORTANCE_LOW
             )
             val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
