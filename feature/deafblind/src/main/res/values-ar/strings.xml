@@ -7,7 +7,7 @@
     <string name="tap">المس</string>
     <string name="ready">جاهز</string>
     <string name="not_connected">مش متصل</string>
-    <string name="confirm_action_format">تأكيد: %1$s؟</string>
+    <string name="confirm_action_format">تأكيد:\n %1$s؟</string>
     <string name="timed_out">الوقت خلص</string>
     <string name="wrong_gesture">حركة غلط</string>
     <string name="sending">جاري الإرسال…</string>
