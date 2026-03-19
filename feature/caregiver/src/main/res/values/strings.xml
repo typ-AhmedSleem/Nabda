@@ -13,11 +13,11 @@
     <string name="charging">CHARGING</string>
     <string name="discharging">DISCHARGING</string>
     <string name="battery_life">BATTERY LIFE</string>
-    <string name="excellent">EXCELLENT</string>
-    <string name="good">GOOD</string>
-    <string name="fair">FAIR</string>
-    <string name="poor">POOR</string>
-    <string name="none">NONE</string>
+    <string name="excellent">excellent</string>
+    <string name="good">good</string>
+    <string name="fair">fair</string>
+    <string name="poor">poor</string>
+    <string name="none">none</string>
     <string name="stable">STABLE</string>
     <string name="network_source">NETWORK SOURCE</string>
     <string name="bars_format">%1$d/4 BARS</string>
@@ -30,8 +30,8 @@
     <string name="silent">SILENT</string>
     <string name="normal">NORMAL</string>
     <string name="deaf_device_mode">DEAF DEVICE MODE</string>
-    <string name="system_active">SYSTEM ACTIVE</string>
-    <string name="system_offline">SYSTEM OFFLINE</string>
+    <string name="system_active">System Active</string>
+    <string name="system_offline">System Offline</string>
     <string name="connected_to_nabda_device">Connected to NABDA Device</string>
     <string name="help_requested">HELP REQUESTED</string>
     <string name="fall_detected">FALL DETECTED</string>
@@ -79,4 +79,26 @@
     <string name="action_do_you_want_this_desc">Confirm preference for an item or activity.</string>
     <string name="action_im_coming_title">I\'m coming</string>
     <string name="action_im_coming_desc">Signal that assistance is on the way.</string>
+
+    <!-- Metrics Screen -->
+    <string name="active_monitoring">ACTIVE MONITORING</string>
+    <string name="permissions_and_security">Permissions</string>
+    <string name="connectivity">Connectivity</string>
+    <string name="notifications_are_enabled">Notifications are enabled</string>
+    <string name="notifications_are_disabled">Notifications are disabled</string>
+    <string name="alert_profile">Alert Profile</string>
+    <string name="phone_is_not_silent">Phone is not silent</string>
+    <string name="phone_is_silent">Phone is silent</string>
+    <string name="device_metrics">Device Metrics</string>
+    <string name="power_level">POWER LEVEL</string>
+    <string name="battery_percentage_format">Battery is at %1$d%%</string>
+    <string name="power_source">POWER SOURCE</string>
+    <string name="device_is_charging">Device is charging</string>
+    <string name="device_is_discharging">Device is discharging</string>
+    <string name="infrastructure">INFRASTRUCTURE</string>
+    <string name="connected_to_wifi">Connected to Wi-Fi</string>
+    <string name="data_strength">DATA STRENGTH</string>
+    <string name="signal_strength_format">Signal is %1$s (4G)</string>
+    <string name="geofence_position">Geofence Position</string>
+    <string name="located_in_format">Located in %1$s</string>
 </resources>
