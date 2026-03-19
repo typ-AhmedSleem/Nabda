@@ -31,12 +31,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.text.trimmedLength
+import com.typ.nabda.feature.pairing.R
 
 // Hardcoded Colors
 private val BackgroundColor = Color(0xFFFDF8E8)
@@ -71,7 +73,7 @@ fun CaregiverPairingScreen(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Pair Device",
+                text = stringResource(R.string.pair_device),
                 style = TextStyle(
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
@@ -101,7 +103,7 @@ fun CaregiverPairingScreen(
 
         // Title
         Text(
-            text = "Ready to pair ..",
+            text = stringResource(R.string.ready_to_pair),
             style = TextStyle(
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
@@ -113,7 +115,7 @@ fun CaregiverPairingScreen(
 
         // Subtitle
         Text(
-            text = "Position your device nearby or use the pairing code from the device screen.",
+            text = stringResource(R.string.pairing_description),
             style = TextStyle(
                 fontSize = 16.sp,
                 color = SecondaryTextColor,
@@ -136,11 +138,11 @@ fun CaregiverPairingScreen(
             ),
             singleLine = true,
             label = {
-                Text("Pairing code")
+                Text(stringResource(R.string.pairing_code_label))
             },
             placeholder = {
                 Text(
-                    text = "Enter pairing code manually",
+                    text = stringResource(R.string.pairing_code_placeholder),
                     style = TextStyle(
                         fontSize = 18.sp,
                         color = SecondaryTextColor
@@ -162,7 +164,7 @@ fun CaregiverPairingScreen(
             enabled = pairingCode.trimmedLength() >= 10
         ) {
             Text(
-                text = "Pair",
+                text = stringResource(R.string.pair),
                 style = TextStyle(
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
@@ -184,7 +186,7 @@ fun CaregiverPairingScreen(
                 color = SecondaryTextColor.copy(alpha = 0.2f)
             )
             Text(
-                text = "OR",
+                text = stringResource(R.string.or_divider),
                 style = TextStyle(
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
@@ -218,7 +220,7 @@ fun CaregiverPairingScreen(
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = "Pair using QR",
+                    text = stringResource(R.string.pair_using_qr),
                     style = TextStyle(
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,

@@ -26,10 +26,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.typ.nabda.feature.caregiver.R
 
 @Composable
 fun CaregiverPermissionsScreen(
@@ -52,7 +54,7 @@ fun CaregiverPermissionsScreen(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Permissions",
+                text = stringResource(R.string.permissions),
                 style = TextStyle(
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
@@ -65,7 +67,7 @@ fun CaregiverPermissionsScreen(
 
         // Headline
         Text(
-            text = "Enable permissions",
+            text = stringResource(R.string.enable_permissions),
             style = TextStyle(
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
@@ -77,7 +79,7 @@ fun CaregiverPermissionsScreen(
 
         // Subtitle
         Text(
-            text = "To ensure you receive timely alerts and can pair with other devices, please enable the following permissions.",
+            text = stringResource(R.string.permissions_subtitle),
             style = TextStyle(
                 fontSize = 16.sp,
                 color = Color(0xFF74777F),
@@ -89,8 +91,8 @@ fun CaregiverPermissionsScreen(
 
         // Permission Cards
         PermissionCard(
-            title = "Notifications",
-            description = "Receive alerts when your loved one needs assistance.",
+            title = stringResource(R.string.notifications_title),
+            description = stringResource(R.string.notifications_desc),
             isEnabled = notificationsEnabled,
             onToggle = { notificationsEnabled = it }
         )
@@ -98,8 +100,8 @@ fun CaregiverPermissionsScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         PermissionCard(
-            title = "Camera",
-            description = "Used to scan QR codes for pairing with other devices.",
+            title = stringResource(R.string.camera_title),
+            description = stringResource(R.string.camera_desc),
             isEnabled = cameraEnabled,
             onToggle = { cameraEnabled = it }
         )
@@ -118,7 +120,7 @@ fun CaregiverPermissionsScreen(
             shape = RoundedCornerShape(32.dp) // More circular shape
         ) {
             Text(
-                text = "Continue",
+                text = stringResource(R.string.continue_label),
                 style = TextStyle(
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,

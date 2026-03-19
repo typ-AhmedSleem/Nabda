@@ -26,10 +26,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.typ.nabda.feature.caregiver.R
 
 @Composable
 fun CaregiverHowToScreen(
@@ -49,7 +51,7 @@ fun CaregiverHowToScreen(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "How it works",
+                text = stringResource(R.string.how_it_works),
                 style = TextStyle(
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
@@ -63,8 +65,8 @@ fun CaregiverHowToScreen(
         // Steps
         HowToStep(
             number = 1,
-            title = "Scan QR",
-            description = "Scan the QR code on the device to pair it with your app.",
+            title = stringResource(R.string.scan_qr_title),
+            description = stringResource(R.string.scan_qr_desc),
             icon = Icons.Default.QrCodeScanner
         )
 
@@ -73,8 +75,8 @@ fun CaregiverHowToScreen(
         // Swapped order as requested: 3. Stay Connected comes before 2. Receive Alerts
         HowToStep(
             number = 2,
-            title = "Stay Connected",
-            description = "Stay connected and monitor the well-being of your loved one.",
+            title = stringResource(R.string.stay_connected_title),
+            description = stringResource(R.string.stay_connected_desc),
             icon = Icons.Default.Wifi
         )
 
@@ -82,8 +84,8 @@ fun CaregiverHowToScreen(
 
         HowToStep(
             number = 3,
-            title = "Receive Alerts",
-            description = "Receive real-time alerts and notifications from the paired device.",
+            title = stringResource(R.string.receive_alerts_title),
+            description = stringResource(R.string.receive_alerts_desc),
             icon = Icons.Default.Notifications
         )
 
@@ -101,7 +103,7 @@ fun CaregiverHowToScreen(
             shape = RoundedCornerShape(32.dp)
         ) {
             Text(
-                text = "Scan QR now",
+                text = stringResource(R.string.scan_qr_now),
                 style = TextStyle(
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
@@ -143,7 +145,7 @@ fun HowToStep(
 
         Column {
             Text(
-                text = "$number. $title",
+                text = stringResource(R.string.step_format, number, title),
                 style = TextStyle(
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
