@@ -8,7 +8,7 @@ object LocalNetworkConstants {
     const val SERVER_HOST = "0.0.0.0"
     const val SERVICE_TYPE = "_nabda._tcp"
     const val SERVICE_NAME = "Nabda Device"
-    const val DEMO_AUTH_TOKEN = "DEMO_TOKEN"
+    const val DEMO_AUTH_TOKEN = "TYP_AHMED_SLEEM"
 
     /** HTTP header key for the static demo auth token. */
     const val AUTH_HEADER = "Authorization"
@@ -28,5 +28,5 @@ object LocalNetworkConstants {
     const val HEARTBEAT_INTERVAL_MS = 10_000L
     const val HEARTBEAT_BACKOFF_MS = 15_000L
     const val MAX_CONSECUTIVE_FAILURES = 3
-    const val TELEMETRY_DELAY = 2500L
+    const val TELEMETRY_DELAY = 1000L
 }
