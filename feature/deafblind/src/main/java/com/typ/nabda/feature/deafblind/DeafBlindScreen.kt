@@ -1,7 +1,10 @@
 package com.typ.nabda.feature.deafblind
 
+import android.content.res.Configuration
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.calculatePan
@@ -13,26 +16,28 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Swipe
 import androidx.compose.material.icons.filled.TouchApp
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
@@ -51,112 +56,155 @@ import com.typ.nabda.core.haptic.AndroidHapticEngine
 import com.typ.nabda.core.messaging.IncomingActionDispatcher
 import com.typ.nabda.core.model.GestureInput
 import com.typ.nabda.core.model.RequestedAction
+import com.typ.nabda.designsystem.theme.NabdaTheme
 import org.koin.compose.viewmodel.koinViewModel
 
-// Design colors
-private val BackgroundColor = Color(0xFFFDF8E8) // Creamy color from design
-private val PointerColor = Color(0xFFFFA000).copy(alpha = 0.6f) // Orange glow
-private val IconTint = Color(0xFF3C3228)
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeafBlindScreen(
     viewModel: DeafBlindViewModel = koinViewModel(),
+    onNavigateToTests: () -> Unit = {},
 ) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(BackgroundColor)
-            .statusBarsPadding()
-            .navigationBarsPadding()
-            .pointerInput(Unit) {
-                detectCustomGestures(
-                    onPointersChanged = { viewModel.onPointersChanged(it) },
-                    onGesture = { viewModel.onGestureInput(it) }
-                )
-            }
-            .then(if (state.connectedClientsCount == 0) Modifier.background(Color.Black.copy(alpha = 0.3f)) else Modifier)
-    ) {
-        // App Title at the top center
-        Column(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = stringResource(R.string.nabda),
-                style = MaterialTheme.typography.headlineMedium,
-                color = IconTint
-            )
+    val primaryColor = MaterialTheme.colorScheme.primary
 
-            Surface(
-                color = if (state.connectedClientsCount > 0) Color(0xFF4CAF50) else Color(0xFFF44336),
-                shape = MaterialTheme.shapes.extraSmall,
-                modifier = Modifier.padding(top = 4.dp)
-            ) {
-                Text(
-                    text = if (state.connectedClientsCount > 0) stringResource(
-                        R.string.clients_connected_format,
-                        state.connectedClientsCount
-                    ) else stringResource(R.string.no_clients_connected),
-                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                    color = Color.White,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                )
-            }
-        }
-
-        // Action Feedback
-        Column(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 120.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = state.feedbackMessage.asString(),
-                style = MaterialTheme.typography.displaySmall.copy(
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 32.sp
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = if (uiState.connectedClientsCount > 0) {
+                        MaterialTheme.colorScheme.background
+                    } else {
+                        MaterialTheme.colorScheme.background.copy(0.5f)
+                    },
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
                 ),
-                color = if (state.isWaitingForConfirmation) Color(0xFFFFA000) else IconTint,
-                textAlign = TextAlign.Center
+                title = {
+                    Column(
+                        modifier = Modifier.padding(vertical = 16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(
+                            alignment = Alignment.CenterVertically,
+                            space = 8.dp,
+                        )
+                    ) {
+                        Text(
+                            modifier = Modifier.clickable { onNavigateToTests() },
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            text = stringResource(R.string.nabda),
+                            fontWeight = FontWeight.ExtraBold,
+                        )
+                    }
+                }
             )
-
-            if (state.isWaitingForConfirmation) {
-                Spacer(modifier = Modifier.height(16.dp))
-                LinearProgressIndicator(
-                    modifier = Modifier.width(200.dp),
-                    color = Color(0xFFFFA000)
-                )
-            }
+        },
+        containerColor = if (uiState.connectedClientsCount > 0) {
+            MaterialTheme.colorScheme.background
+        } else {
+            MaterialTheme.colorScheme.background.copy(0.5f)
         }
-
-        // Pointer Visuals (Circles under fingers)
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            state.pointers.values.forEach { offset ->
-                drawCircle(
-                    color = PointerColor,
-                    radius = 20.dp.toPx(),
-                    center = offset
-                )
-            }
-        }
-
-        // Bottom Navigation Icons
-        Row(
+    ) { insetPaddings ->
+        Box(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(bottom = 32.dp)
-                .padding(horizontal = 48.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .fillMaxSize()
+                .padding(insetPaddings)
+                .pointerInput(Unit) {
+                    if (uiState.connectedClientsCount == 0) return@pointerInput
+                    detectCustomGestures(
+                        onPointersChanged = { viewModel.onPointersChanged(it) },
+                        onGesture = { viewModel.onGestureInput(it) }
+                    )
+                }
+//                .then(if (uiState.connectedClientsCount == 0) Modifier.background(Color.Black.copy(alpha = 0.3f)) else Modifier)
         ) {
-            BottomIcon(Icons.Default.Swipe, stringResource(R.string.swipe))
-            BottomIcon(Icons.Default.TouchApp, stringResource(R.string.tap))
+            // Action Feedback
+            Column(
+                modifier = Modifier.align(Alignment.Center),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                AnimatedVisibility(uiState.connectedClientsCount > 0) {
+                    Text(
+                        text = uiState.feedbackMessage.asString(),
+                        style = MaterialTheme.typography.displaySmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 24.sp
+                        ),
+                        color = if (uiState.isWaitingForConfirmation) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onBackground,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                if (uiState.isWaitingForConfirmation) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    LinearProgressIndicator(
+                        modifier = Modifier.width(200.dp),
+                        trackColor = primaryColor.copy(0.1f),
+                        color = primaryColor,
+                    )
+                }
+            }
+
+            // Pointer Visuals (Circles under fingers)
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                uiState.pointers.values.forEach { offset ->
+                    drawCircle(
+                        color = primaryColor.copy(alpha = 0.6f),
+                        radius = 20.dp.toPx(),
+                        center = offset
+                    )
+                }
+            }
+
+            // Bottom Navigation Icons
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+                    .padding(horizontal = 32.dp),
+                horizontalArrangement = Arrangement.spacedBy(
+                    alignment = Alignment.CenterHorizontally,
+                    space = 16.dp,
+                ),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                BottomIcon(Icons.Default.Swipe, stringResource(R.string.swipe))
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .weight(1f)
+                        .heightIn(min = 36.dp)
+                        .clip(MaterialTheme.shapes.extraLarge)
+                        .background(
+                            if (uiState.connectedClientsCount > 0) {
+                                MaterialTheme.colorScheme.primaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.errorContainer
+                            }
+                        )
+                ) {
+                    Text(
+                        maxLines = 2,
+                        textAlign = TextAlign.Center,
+                        text = if (uiState.connectedClientsCount > 0) stringResource(
+                            R.string.clients_connected_format,
+                            uiState.connectedClientsCount
+                        ) else stringResource(R.string.no_clients_connected),
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                        color = if (uiState.connectedClientsCount > 0) {
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.onErrorContainer
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                    )
+                }
+                BottomIcon(Icons.Default.TouchApp, stringResource(R.string.tap))
+            }
         }
     }
 }
@@ -167,14 +215,14 @@ fun BottomIcon(icon: ImageVector, label: String) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = IconTint,
+            tint = MaterialTheme.colorScheme.secondary,
             modifier = Modifier.size(32.dp)
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
-            color = IconTint.copy(alpha = 0.6f)
+            color = MaterialTheme.colorScheme.secondary
         )
     }
 }
@@ -227,10 +275,30 @@ suspend fun PointerInputScope.detectCustomGestures(
     }
 }
 
-@Preview
+@Preview(locale = "ar", uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL)
 @Composable
-private fun DeafBlindScreenPreview() {
-    MaterialTheme {
+private fun DeafBlindScreenPreviewDark() {
+    NabdaTheme {
+        val ctx = LocalContext.current
+        val vm = remember {
+            DeafBlindViewModel(
+                signalDispatcher = object : SignalDispatcher {
+                    override suspend fun dispatchAction(requestedAction: RequestedAction): NabdaResult<Unit> {
+                        return NabdaResult.Success(Unit)
+                    }
+                },
+                incomingActionDispatcher = IncomingActionDispatcher(),
+                hapticEngine = AndroidHapticEngine(ctx),
+            )
+        }
+        DeafBlindScreen(vm)
+    }
+}
+
+@Preview(locale = "ar")
+@Composable
+private fun DeafBlindScreenPreviewLight() {
+    NabdaTheme {
         val ctx = LocalContext.current
         val vm = remember {
             DeafBlindViewModel(
