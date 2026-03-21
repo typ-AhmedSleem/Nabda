@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="nabda">نبضة</string>
-    <string name="clients_connected_format">في %1$d مرافقين متصلين</string>
+    <string name="clients_connected_format">فيه %1$d مرافقين متصلين</string>
     <string name="no_clients_connected">مفيش مرافقين متصلين</string>
     <string name="swipe">اسحب</string>
     <string name="tap">المس</string>

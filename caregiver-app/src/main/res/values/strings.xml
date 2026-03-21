@@ -26,5 +26,6 @@
     <string name="connection_status_prefix">Status: %1$s</string>
     <string name="caregiver_status_channel">Caregiver Status</string>
     <string name="high_priority_alert">HIGH PRIORITY ALERT</string>
+    <string name="assistance_priority_alert">ASSISTANCE REQUIRED</string>
     <string name="received">RECEIVED</string>
 </resources>
