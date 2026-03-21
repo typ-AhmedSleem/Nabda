@@ -6,8 +6,32 @@ import kotlinx.serialization.Serializable
 sealed class HapticEnginePattern(
     val amplitudes: IntArray,
     val durations: LongArray,
-    val repeats: Int = 1,
+    val repeats: Int = -1,
 ) {
+    @Serializable
+    data class Custom(
+        val customAmplitudes: IntArray,
+        val customDurations: LongArray,
+    ) : HapticEnginePattern(customAmplitudes, customDurations) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as Custom
+
+            if (!customAmplitudes.contentEquals(other.customAmplitudes)) return false
+            if (!customDurations.contentEquals(other.customDurations)) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = customAmplitudes.contentHashCode()
+            result = 31 * result + customDurations.contentHashCode()
+            return result
+        }
+    }
+
     @Serializable
     data object NotConnected : HapticEnginePattern(
         amplitudes = intArrayOf(0, 150, 0, 150),
