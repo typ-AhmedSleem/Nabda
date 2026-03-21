@@ -18,6 +18,7 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.typ.nabda.deaf.MainActivity
+import com.typ.nabda.deafblind.R
 import com.typ.nabda.feature.deafblind.localserver.TelemetryCollector
 import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants
 import com.typ.nabda.infrastructure.localnetwork.server.LocalKtorServer
@@ -257,19 +258,18 @@ class ServerService : Service() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        // todo: Extract hardcoded strings to strings.xml and localize them to Arabic too.
         val isRunning = ktorServer != null
-        val statusTitle = if (isRunning) "Nabda Server: RUNNING" else "Nabda Server: STOPPED"
+        val statusTitle = if (isRunning) getString(R.string.server_status_running) else getString(R.string.server_status_stopped)
 
-        val statusText = if (!isRunning) "Server is currently offline"
-        else if (clientsCount == 0) "Waiting for clients..."
-        else "$clientsCount client(s) connected"
+        val statusText = if (!isRunning) getString(R.string.server_offline)
+        else if (clientsCount == 0) getString(R.string.server_waiting_for_clients)
+        else getString(R.string.server_clients_connected, clientsCount)
 
-        if (isRunning) "Stop Server" else "Start Server"
+        val actionText = if (isRunning) getString(R.string.action_stop_server) else getString(R.string.action_start_server)
         val actionIntent = Intent(this, ServerService::class.java).apply {
             action = if (isRunning) ACTION_STOP_SERVER else ACTION_START_SERVER
         }
-        PendingIntent.getService(
+        val actionPendingIntent = PendingIntent.getService(
             this, 1, actionIntent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
@@ -280,13 +280,13 @@ class ServerService : Service() {
             .setSmallIcon(android.R.drawable.stat_notify_sync)
             .setOngoing(true)
             .setContentIntent(pendingIntent)
-        /*.addAction(
-            NotificationCompat.Action.Builder(
-                if (isRunning) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play,
-                actionText,
-                actionPendingIntent
-            ).build()
-        )*/
+            .addAction(
+                NotificationCompat.Action.Builder(
+                    if (isRunning) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play,
+                    actionText,
+                    actionPendingIntent
+                ).build()
+            )
 
         return builder.build()
     }
@@ -300,7 +300,7 @@ class ServerService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "Nabda Server Status",
+                getString(R.string.server_notification_channel_name),
                 NotificationManager.IMPORTANCE_LOW
             )
             val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
