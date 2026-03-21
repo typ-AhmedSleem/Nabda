@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -31,11 +32,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.typ.nabda.caregiver.R
 import com.typ.nabda.core.haptic.HapticEngine
+import com.typ.nabda.core.model.ActionPriority
 import com.typ.nabda.core.model.HapticEnginePattern
+import com.typ.nabda.designsystem.theme.NabdaTheme
 import com.typ.nabda.infrastructure.localnetwork.model.ActionPayload
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -61,73 +65,140 @@ fun HighPriorityAlertOverlay(
     }
 
     if (isVisible) {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = Color.Red
+        HighPriorityAlertOverlayContent(
+            alert = alert,
+            onDismiss = {
+                isVisible = false
+                onReceived()
+            }
+        )
+    }
+}
+
+@Composable
+private fun HighPriorityAlertOverlayContent(
+    alert: ActionPayload,
+    onDismiss: () -> Unit,
+) {
+    val containerColor = if (alert.priority == ActionPriority.ASSISTANCE) {
+        MaterialTheme.colorScheme.primaryContainer
+    } else {
+        MaterialTheme.colorScheme.errorContainer
+    }
+
+    val contentColor = if (alert.priority == ActionPriority.ASSISTANCE) {
+        MaterialTheme.colorScheme.onPrimaryContainer
+    } else {
+        MaterialTheme.colorScheme.onErrorContainer
+    }
+
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = containerColor
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Column(
+            Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                    .size(120.dp)
+                    .background(Color.White.copy(alpha = 0.2f), CircleShape),
+                contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(120.dp)
-                        .background(Color.White.copy(alpha = 0.2f), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Warning,
-                        contentDescription = "Alert",
-                        tint = Color.White,
-                        modifier = Modifier.size(64.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                Text(
-                    text = stringResource(R.string.high_priority_alert),
-                    style = MaterialTheme.typography.headlineLarge.copy(
-                        fontWeight = FontWeight.Black,
-                        color = Color.White
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = alert.title,
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        color = Color.White.copy(alpha = 0.9f)
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(48.dp))
-
-                Button(
-                    onClick = {
-                        isVisible = false
-                        onReceived()
+                Icon(
+                    imageVector = if (alert.priority == ActionPriority.ASSISTANCE) {
+                        Icons.Filled.QuestionMark
+                    } else {
+                        Icons.Default.Warning
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(64.dp),
-                    shape = MaterialTheme.shapes.large
-                ) {
-                    Text(
-                        text = stringResource(R.string.received),
-                        style = TextStyle(
-                            color = Color.Red,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                    contentDescription = "Alert",
+                    tint = contentColor,
+                    modifier = Modifier.size(64.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Text(
+                text = if (alert.priority == ActionPriority.ASSISTANCE) {
+                    stringResource(R.string.assistance_priority_alert)
+                } else {
+                    stringResource(R.string.high_priority_alert)
+                },
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Black,
+                    color = contentColor
+                )
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = alert.title,
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    color = contentColor.copy(alpha = 0.9f)
+                )
+            )
+
+            Spacer(modifier = Modifier.height(48.dp))
+
+            Button(
+                onClick = onDismiss,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = contentColor
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp),
+                shape = MaterialTheme.shapes.extraLarge
+            ) {
+                Text(
+                    text = stringResource(R.string.received),
+                    style = TextStyle(
+                        color = containerColor,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
                     )
-                }
+                )
             }
         }
+    }
+}
+
+@Preview
+@Composable
+private fun HighPriorityAlertOverlayAssistancePreview() {
+    NabdaTheme {
+        HighPriorityAlertOverlayContent(
+            alert = ActionPayload(
+                correlationId = "1",
+                actionId = "1",
+                title = "Assistance Requested",
+                priority = ActionPriority.ASSISTANCE,
+                timestamp = System.currentTimeMillis()
+            ),
+            onDismiss = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun HighPriorityAlertOverlayEmergencyPreview() {
+    NabdaTheme {
+        HighPriorityAlertOverlayContent(
+            alert = ActionPayload(
+                correlationId = "2",
+                actionId = "2",
+                title = "Emergency Detected",
+                priority = ActionPriority.EMERGENCY,
+                timestamp = System.currentTimeMillis()
+            ),
+            onDismiss = {}
+        )
     }
 }
