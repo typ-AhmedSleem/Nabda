@@ -131,7 +131,7 @@ class CaregiverViewModel(
                 // If we have a local host, send it directly via HTTP
                 if (connectedHost.value != null) {
                     val payload = CaregiverActionPayload(
-                        actionId = caregiverAction.id,
+                        actionId = caregiverAction.name,
                         timestamp = System.currentTimeMillis(),
                         correlationId = UUID.randomUUID().toString(),
                     )
@@ -163,7 +163,7 @@ class CaregiverViewModel(
 
     val filteredAlerts: StateFlow<List<Alert>> = combine(alerts, _selectedFilter) { alerts, filter ->
         if (filter == null) alerts
-        else alerts.filter { it.actionId == filter.id }
+        else alerts.filter { it.actionId == filter.name }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
