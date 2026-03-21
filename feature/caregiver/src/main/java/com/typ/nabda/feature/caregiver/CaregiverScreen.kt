@@ -3,40 +3,33 @@ package com.typ.nabda.feature.caregiver
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.DirectionsRun
-import androidx.compose.material.icons.automirrored.filled.Help
+import androidx.compose.material.icons.filled.BatteryAlert
 import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.BatteryStd
 import androidx.compose.material.icons.filled.Dashboard
-import androidx.compose.material.icons.filled.Fastfood
 import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.MedicalServices
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.SignalCellularAlt
 import androidx.compose.material.icons.filled.Wifi
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -54,19 +47,27 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.fastForEach
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.typ.nabda.core.model.Alert
 import com.typ.nabda.core.model.CaregiverAction
 import com.typ.nabda.core.model.ConnectivitySource
 import com.typ.nabda.designsystem.theme.NabdaTheme
+import com.typ.nabda.feature.caregiver.actions.CaregiverQuickActions
+import com.typ.nabda.feature.caregiver.models.QuickActionItem
 import org.koin.compose.viewmodel.koinViewModel
 
 enum class CaregiverTab {
@@ -264,9 +265,10 @@ fun MetricsScreen(
                 )
                 Text(
                     text = connectedHost?.removePrefix("http://") ?: stringResource(R.string.connected_to_nabda_device),
-                    style = MaterialTheme.typography.titleLarge.copy(
+                    style = TextStyle(
                         fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.ExtraBold,
                         color = TargetGreen,
                         letterSpacing = 1.sp
                     )
@@ -281,7 +283,7 @@ fun MetricsScreen(
                 },
                 style = MaterialTheme.typography.displaySmall.copy(
                     fontWeight = FontWeight.Black,
-                    color = TargetBlack,
+                    color = MaterialTheme.colorScheme.onBackground,
                 )
             )
         }
@@ -310,7 +312,7 @@ fun MetricsScreen(
             MetricListItem(
                 label = stringResource(R.string.power_source),
                 text = if (telemetryState?.isCharging == true) stringResource(R.string.device_is_charging) else stringResource(R.string.device_is_discharging),
-                icon = if (telemetryState?.isCharging == true) Icons.Default.BatteryChargingFull else Icons.Default.BatteryStd,
+                icon = if (telemetryState?.isCharging == true) Icons.Default.BatteryChargingFull else Icons.Default.BatteryAlert,
                 fontSize = 20.sp
             )
             MetricListItem(
@@ -361,11 +363,11 @@ fun MetricSection(
             style = MaterialTheme.typography.titleLarge.copy(
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Medium,
-                color = TargetGray,
+                color = MaterialTheme.colorScheme.onBackground.copy(0.65f),
                 letterSpacing = 1.sp
             )
         )
-        HorizontalDivider(color = TargetGray.copy(alpha = 0.2f), thickness = 1.dp)
+        HorizontalDivider(thickness = 1.dp)
         content()
     }
 }
@@ -404,7 +406,7 @@ fun MetricListItem(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = TargetBlack,
+                    tint = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -414,8 +416,8 @@ fun MetricListItem(
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontSize = fontSize,
                     fontWeight = FontWeight.Bold,
-                    color = TargetBlack,
-                    lineHeight = fontSize * 1.1f
+                    color = MaterialTheme.colorScheme.onBackground,
+                    lineHeight = fontSize
                 )
             )
         }
@@ -427,45 +429,7 @@ fun ActionsScreenContent(
     modifier: Modifier = Modifier,
     onActionClick: (CaregiverAction) -> Unit,
 ) {
-    val actions = remember {
-        listOf(
-            QuickActionItem(
-                action = CaregiverAction.FOOD_READY,
-                descResId = R.string.action_food_ready_desc,
-                icon = Icons.Default.Fastfood,
-                iconBg = Color(0xFFFFE0B2),
-                iconColor = Color(0xFFE65100)
-            ),
-            QuickActionItem(
-                action = CaregiverAction.COME_CLOSER,
-                descResId = R.string.action_come_closer_desc,
-                icon = Icons.Default.Person,
-                iconBg = Color(0xFFE3F2FD),
-                iconColor = Color(0xFF1976D2)
-            ),
-            QuickActionItem(
-                action = CaregiverAction.ARE_YOU_SICK,
-                descResId = R.string.action_are_you_sick_desc,
-                icon = Icons.Default.MedicalServices,
-                iconBg = Color(0xFFFFEBEE),
-                iconColor = Color(0xFFD32F2F)
-            ),
-            QuickActionItem(
-                action = CaregiverAction.DO_WANT_THIS,
-                descResId = R.string.action_do_you_want_this_desc,
-                icon = Icons.AutoMirrored.Filled.Help,
-                iconBg = Color(0xFFF3E5F5),
-                iconColor = Color(0xFF7B1FA2)
-            ),
-            QuickActionItem(
-                action = CaregiverAction.IM_COMING,
-                descResId = R.string.action_im_coming_desc,
-                icon = Icons.AutoMirrored.Filled.DirectionsRun,
-                iconBg = Color(0xFFE8F5E9),
-                iconColor = Color(0xFF388E3C)
-            )
-        )
-    }
+    val actions = remember { CaregiverQuickActions.allActions }
 
     Column(
         modifier = modifier
@@ -481,7 +445,7 @@ fun ActionsScreenContent(
                 color = Color(0xFF3C3228)
             )
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = stringResource(R.string.quick_actions_subtitle),
             style = MaterialTheme.typography.titleLarge.copy(
@@ -491,28 +455,26 @@ fun ActionsScreenContent(
         )
         Spacer(modifier = Modifier.height(32.dp))
 
-        LazyColumn(
+        FlowRow(
             modifier = Modifier.fillMaxSize(),
+            itemVerticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(
+                alignment = Alignment.CenterHorizontally,
+                space = 16.dp,
+            ),
+            maxItemsInEachRow = 2,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            items(actions) { item ->
+            actions.fastForEach { item ->
                 QuickActionCard(
                     item = item,
+                    modifier = Modifier.weight(1f),
                     onClick = { onActionClick(item.action) }
                 )
             }
-            item { Spacer(modifier = Modifier.height(32.dp)) }
         }
     }
 }
-
-data class QuickActionItem(
-    val action: CaregiverAction,
-    val descResId: Int,
-    val icon: ImageVector,
-    val iconBg: Color,
-    val iconColor: Color,
-)
 
 @Composable
 fun QuickActionCard(
@@ -520,66 +482,48 @@ fun QuickActionCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    Card(
+    Column(
         modifier = modifier
-            .fillMaxWidth()
-            .height(140.dp),
-        shape = RoundedCornerShape(40.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        onClick = onClick
+            .heightIn(min = 164.dp)
+            .clip(MaterialTheme.shapes.extraLarge)
+            .background(Color.White)
+            .clickable(onClick = onClick)
+            .padding(
+                horizontal = 16.dp,
+                vertical = 16.dp
+            ),
+        verticalArrangement = Arrangement.SpaceEvenly
     ) {
-        Row(
+        Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .size(60.dp)
+                .align(Alignment.CenterHorizontally)
+                .background(item.iconBg, MaterialTheme.shapes.extraLarge),
+            contentAlignment = Alignment.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .size(60.dp)
-                    .background(item.iconBg, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = item.icon,
-                    contentDescription = null,
-                    tint = item.iconColor,
-                    modifier = Modifier.size(28.dp)
-                )
-            }
-            Spacer(modifier = Modifier.width(20.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                val title = when (item.action) {
-                    CaregiverAction.FOOD_READY -> stringResource(R.string.action_food_ready_title)
-                    CaregiverAction.COME_CLOSER -> stringResource(R.string.action_come_closer_title)
-                    CaregiverAction.ARE_YOU_SICK -> stringResource(R.string.action_are_you_sick_title)
-                    CaregiverAction.DO_WANT_THIS -> stringResource(R.string.action_do_you_want_this_title)
-                    CaregiverAction.IM_COMING -> stringResource(R.string.action_im_coming_title)
-                    else -> item.action.name
-                }
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF3C3228)
-                    )
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = stringResource(item.descResId),
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontSize = 14.sp,
-                        color = Color(0xFF7A8499)
-                    )
-                )
-            }
+            Icon(
+                imageVector = item.icon,
+                contentDescription = null,
+                tint = item.iconColor,
+                modifier = Modifier.size(28.dp)
+            )
         }
+
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            textAlign = TextAlign.Center,
+            text = stringResource(item.titleResId),
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF3C3228)
+            )
+        )
     }
 }
 
-@Preview(locale = "ar")
+//@Preview(locale = "ar")
 @Composable
 fun CaregiverDashboardPreview() {
     var selectedTab by remember { mutableStateOf(CaregiverTab.METRICS) }
@@ -597,7 +541,7 @@ fun CaregiverDashboardPreview() {
                 batteryPercentage = 84,
                 isCharging = true,
                 connectivity = ConnectivitySource.WIFI,
-                locationLabel = "Brooklyn, NY",
+                locationLabel = "الزقازيق، مصر",
                 lastSeenLabel = "Last seen label",
                 rawTimestamp = System.currentTimeMillis(),
                 signalStrength = 4,
@@ -612,8 +556,9 @@ fun CaregiverDashboardPreview() {
     }
 }
 
-@Preview(locale = "ar")
+//@Preview(locale = "ar")
 @Composable
+@PreviewLightDark
 fun MetricsScreenPreview() {
     NabdaTheme {
         Scaffold {
@@ -629,7 +574,7 @@ fun MetricsScreenPreview() {
                         batteryPercentage = 84,
                         isCharging = true,
                         connectivity = ConnectivitySource.WIFI,
-                        locationLabel = "Brooklyn, NY",
+                        locationLabel = "الزقازيق، مصر",
                         lastSeenLabel = "Last seen label",
                         rawTimestamp = System.currentTimeMillis(),
                         signalStrength = 4,
@@ -642,7 +587,8 @@ fun MetricsScreenPreview() {
 }
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@Preview
+@Preview(locale = "ar")
+//@PreviewLightDark
 @Composable
 fun ActionsScreenPreview() {
     NabdaTheme {
