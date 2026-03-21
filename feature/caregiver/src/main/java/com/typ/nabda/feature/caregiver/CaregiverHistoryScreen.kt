@@ -15,8 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
-import androidx.compose.material.icons.filled.BackHand
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -143,18 +141,6 @@ fun FilterChip(
 
 @Composable
 fun HistoryItem(alert: Alert, prettyTime: PrettyTime) {
-    val icon = when (alert.actionId) {
-        CaregiverAction.HELP_REQUEST.id -> Icons.Default.BackHand
-        CaregiverAction.FALL.id -> Icons.AutoMirrored.Filled.DirectionsWalk
-        else -> Icons.Default.Notifications // Default
-    }
-
-    val label = when (alert.actionId) {
-        CaregiverAction.HELP_REQUEST.id -> stringResource(R.string.help_requested)
-        CaregiverAction.FALL.id -> stringResource(R.string.fall_detected)
-        else -> alert.actionName.uppercase()
-    }
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -163,7 +149,7 @@ fun HistoryItem(alert: Alert, prettyTime: PrettyTime) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
-            imageVector = icon,
+            imageVector = Icons.Default.Notifications,
             contentDescription = null,
             tint = PrimaryTextColor,
             modifier = Modifier.size(24.dp)
@@ -172,7 +158,7 @@ fun HistoryItem(alert: Alert, prettyTime: PrettyTime) {
         Spacer(modifier = Modifier.width(16.dp))
 
         Text(
-            text = label,
+            text = alert.actionName,
             style = TextStyle(
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
