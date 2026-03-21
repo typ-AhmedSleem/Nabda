@@ -90,6 +90,8 @@ class LocalKtorServer(
 
                 get("/status") {
                     // Simple health check
+                    Log.d(TAG_SERVER, "Received /status request")
+                    call.respond(HttpStatusCode.OK, "Server is running")
                 }
 
                 // ── POST /action ────────────────────────────────────────────────
@@ -107,6 +109,7 @@ class LocalKtorServer(
                                 message = "Received '${actionPayload.actionId}' successfully."
                             )
                         )
+                        Log.d(TAG_SERVER, "Received /action request for ${actionPayload.actionId} and responded with ACK.")
                     } catch (e: Exception) {
                         Log.w(TAG_SERVER, "Bad request on /action", e)
                         call.respond(
