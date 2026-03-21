@@ -77,6 +77,7 @@
     <string name="action_are_you_sick_desc">اسأل واطمن على حالة المريض فوراً.</string>
     <string name="action_do_you_want_this_title">عايز دي؟</string>
     <string name="action_do_you_want_this_desc">اتأكد لو محتاج حاجة أو نشاط معين.</string>
+    <string name="action_sleep_time_title">جه وقت النوم</string>
     <string name="action_im_coming_title">أنا جاي</string>
     <string name="action_im_coming_desc">عرفهم إن المساعدة في الطريق.</string>
 

@@ -77,6 +77,7 @@
     <string name="action_are_you_sick_desc">Immediate wellness check inquiry for the patient.</string>
     <string name="action_do_you_want_this_title">Do you want this?</string>
     <string name="action_do_you_want_this_desc">Confirm preference for an item or activity.</string>
+    <string name="action_sleep_time_title">It\'s sleep time</string>
     <string name="action_im_coming_title">I\'m coming</string>
     <string name="action_im_coming_desc">Signal that assistance is on the way.</string>
 
