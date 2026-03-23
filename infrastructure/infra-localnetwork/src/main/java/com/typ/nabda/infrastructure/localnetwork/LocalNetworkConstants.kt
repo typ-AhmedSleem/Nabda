@@ -21,8 +21,8 @@ object LocalNetworkConstants {
     const val TAG_HEARTBEAT = "NABDA_HEARTBEAT"
 
     /** Timeouts */
-    const val CONNECT_TIMEOUT_MS = 3_000L
-    const val READ_TIMEOUT_MS = 3_000L
+    const val CONNECT_TIMEOUT_MS = 10_000L
+    const val READ_TIMEOUT_MS = 10_000L
 
     /** Heartbeat polling */
     const val HEARTBEAT_INTERVAL_MS = 10_000L

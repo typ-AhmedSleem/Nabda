@@ -4,6 +4,7 @@ import android.util.Log
 import com.typ.nabda.core.model.TelemetryHeartbeatPayload
 import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants
 import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants.TAG_SERVER
+import com.typ.nabda.infrastructure.localnetwork.client.ServerStatus
 import com.typ.nabda.infrastructure.localnetwork.model.ActionAckPayload
 import com.typ.nabda.infrastructure.localnetwork.model.ActionPayload
 import com.typ.nabda.infrastructure.localnetwork.model.CaregiverActionPayload
@@ -51,7 +52,8 @@ class LocalKtorServer(
 
     @OptIn(ExperimentalUuidApi::class)
     fun start() {
-        server = embeddedServer(CIO, port = port) {
+        LocalServerRegistry.updateStatus(ServerStatus.STARTING)
+        server = embeddedServer(CIO, port = port, host = LocalNetworkConstants.SERVER_HOST) {
             install(ContentNegotiation) {
                 json()
             }
@@ -66,12 +68,15 @@ class LocalKtorServer(
                 webSocket("/ws/events") {
                     val clientId = call.request.origin.remoteHost
                     clients[clientId] = this
+                    LocalServerRegistry.updateClientsCount(clients.size)
                     onClientConnected(clientId)
+                    Log.d(TAG_SERVER, "Client connected: $clientId. Total: ${clients.size}")
 
                     try {
                         for (frame in incoming) {
                             if (frame is Frame.Text) {
                                 val text = frame.readText()
+                                Log.d(TAG_SERVER, "Received: $text")
                                 // Handle incoming messages (like acknowledgements)
                                 if (text.startsWith("ACK:")) {
                                     val actionId = text.removePrefix("ACK:")
@@ -80,16 +85,16 @@ class LocalKtorServer(
                             }
                         }
                     } catch (e: Exception) {
-                        // Log or handle connection issues
-                        e.printStackTrace()
+                        Log.e(TAG_SERVER, "Error in WebSocket for $clientId", e)
                     } finally {
                         clients.remove(clientId)
+                        LocalServerRegistry.updateClientsCount(clients.size)
                         onClientDisconnected(clientId)
+                        Log.d(TAG_SERVER, "Client disconnected: $clientId. Total: ${clients.size}")
                     }
                 }
 
                 get("/status") {
-                    // Simple health check
                     Log.d(TAG_SERVER, "Received /status request")
                     call.respond(HttpStatusCode.OK, "Server is running")
                 }
@@ -124,10 +129,15 @@ class LocalKtorServer(
                 }
             }
         }.start(wait = false)
+        LocalServerRegistry.updateStatus(ServerStatus.RUNNING)
+        Log.i(TAG_SERVER, "Server started on host ${LocalNetworkConstants.SERVER_HOST} port $port")
     }
 
     fun stop() {
-        server?.stop(1000, 2000)
+        server?.stop(1000, 1000)
+        server = null
+        LocalServerRegistry.updateStatus(ServerStatus.OFFLINE)
+        Log.i(TAG_SERVER, "Server stopped")
         scope.cancel()
     }
 
