@@ -11,121 +11,121 @@ object RequestedActionMapper {
         // Region: 1 FINGER * //
         GestureType.ONE_FINGER_SWIPE_UP to RequestedAction(
             id = "NEED_BATHROOM",
-            name = "",
+            name = "عاوز الحمام",
             description = "",
             priority = ActionPriority.ASSISTANCE,
-            hapticPattern = HapticEnginePattern.HelpRequest
+            hapticPattern = HapticEnginePattern.AssistanceRequest
         ),
         GestureType.ONE_FINGER_SWIPE_DOWN to RequestedAction(
             id = "NEED_CHANGE_CLOTH",
-            name = "",
+            name = "عاوز أغير هدومي",
             description = "",
             priority = ActionPriority.ASSISTANCE,
-            hapticPattern = HapticEnginePattern.HelpRequest
+            hapticPattern = HapticEnginePattern.AssistanceRequest
         ),
         GestureType.ONE_FINGER_SWIPE_RIGHT to RequestedAction(
             id = "NEED_EAT",
-            name = "",
+            name = "عاوز أكل",
             description = "",
             priority = ActionPriority.ASSISTANCE,
-            hapticPattern = HapticEnginePattern.EmergencyAlert
+            hapticPattern = HapticEnginePattern.EmergencyRequest
         ),
         GestureType.ONE_FINGER_SWIPE_LEFT to RequestedAction(
             id = "NEED_DRINK",
-            name = "",
+            name = "عاوز أشرب",
             description = "",
             priority = ActionPriority.ASSISTANCE,
-            hapticPattern = HapticEnginePattern.HelpRequest
+            hapticPattern = HapticEnginePattern.AssistanceRequest
         ),
 
         // Region: 2 FINGERS * //
         GestureType.TWO_FINGER_SWIPE_UP to RequestedAction(
             id = "NEED_REST",
-            name = "",
+            name = "أنا تعبان",
             description = "",
             priority = ActionPriority.EMERGENCY,
-            hapticPattern = HapticEnginePattern.HelpRequest
+            hapticPattern = HapticEnginePattern.AssistanceRequest
         ),
         GestureType.TWO_FINGER_SWIPE_DOWN to RequestedAction(
             id = "NEED_SLEEP",
-            name = "",
+            name = "عاوز أنام",
             description = "",
             priority = ActionPriority.ASSISTANCE,
-            hapticPattern = HapticEnginePattern.HelpRequest
+            hapticPattern = HapticEnginePattern.AssistanceRequest
         ),
         GestureType.TWO_FINGER_SWIPE_RIGHT to RequestedAction(
             id = "NEED_WASH_HANDS",
-            name = "",
+            name = "عاوز أغسل إيدي",
             description = "",
             priority = ActionPriority.ASSISTANCE,
-            hapticPattern = HapticEnginePattern.EmergencyAlert
+            hapticPattern = HapticEnginePattern.EmergencyRequest
         ),
         GestureType.TWO_FINGER_SWIPE_LEFT to RequestedAction(
             id = "NEED_WASH_FACE",
-            name = "",
+            name = "عاوز أغسل وشي",
             description = "",
             priority = ActionPriority.ASSISTANCE,
-            hapticPattern = HapticEnginePattern.HelpRequest
+            hapticPattern = HapticEnginePattern.AssistanceRequest
         ),
 
         // Region: 3 FINGERS * //
         GestureType.THREE_FINGER_SWIPE_UP to RequestedAction(
             id = "FEELING_COLD",
-            name = "",
+            name = "أنا بردان",
             description = "",
             priority = ActionPriority.EMERGENCY,
-            hapticPattern = HapticEnginePattern.HelpRequest
+            hapticPattern = HapticEnginePattern.AssistanceRequest
         ),
         GestureType.THREE_FINGER_SWIPE_DOWN to RequestedAction(
             id = "FEELING_HOT",
-            name = "",
+            name = "أنا حران",
             description = "",
             priority = ActionPriority.EMERGENCY,
-            hapticPattern = HapticEnginePattern.HelpRequest
+            hapticPattern = HapticEnginePattern.AssistanceRequest
         ),
         GestureType.THREE_FINGER_SWIPE_RIGHT to RequestedAction(
             id = "PAIN_IN_BELLY",
-            name = "",
+            name = "عندي ألم في بطني",
             description = "",
             priority = ActionPriority.EMERGENCY,
-            hapticPattern = HapticEnginePattern.EmergencyAlert
+            hapticPattern = HapticEnginePattern.EmergencyRequest
         ),
         GestureType.THREE_FINGER_SWIPE_LEFT to RequestedAction(
             id = "PAIN_IN_HEAD",
-            name = "",
+            name = "عندي ألم في راسي",
             description = "",
             priority = ActionPriority.EMERGENCY,
-            hapticPattern = HapticEnginePattern.HelpRequest
+            hapticPattern = HapticEnginePattern.AssistanceRequest
         ),
 
         // Region: 4 FINGERS * //
         GestureType.FOUR_FINGER_SWIPE_UP to RequestedAction(
             id = "WANNA_WALK",
-            name = "",
+            name = "عاوز أتمشي شوية",
             description = "",
             priority = ActionPriority.NORMAL,
-            hapticPattern = HapticEnginePattern.HelpRequest
+            hapticPattern = HapticEnginePattern.NormalRequest
         ),
         GestureType.FOUR_FINGER_SWIPE_DOWN to RequestedAction(
             id = "",
             name = "",
             description = "",
             priority = ActionPriority.NORMAL,
-            hapticPattern = HapticEnginePattern.HelpRequest
+            hapticPattern = HapticEnginePattern.NormalRequest
         ),
         GestureType.FOUR_FINGER_SWIPE_RIGHT to RequestedAction(
             id = "OKAY",
-            name = "",
+            name = "أيوا! أنا موافق",
             description = "",
             priority = ActionPriority.NORMAL,
-            hapticPattern = HapticEnginePattern.EmergencyAlert
+            hapticPattern = HapticEnginePattern.NormalRequest
         ),
         GestureType.FOUR_FINGER_SWIPE_LEFT to RequestedAction(
             id = "NO",
-            name = "",
+            name = "لا! أنا مش موافق",
             description = "",
             priority = ActionPriority.NORMAL,
-            hapticPattern = HapticEnginePattern.HelpRequest
+            hapticPattern = HapticEnginePattern.NormalRequest
         ),
     )
 
