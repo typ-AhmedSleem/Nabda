@@ -30,7 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -134,9 +133,9 @@ private fun HighPriorityAlertOverlayContent(
                 } else {
                     stringResource(R.string.high_priority_alert)
                 },
-                style = MaterialTheme.typography.headlineMedium.copy(
-                    fontWeight = FontWeight.Black,
-                    color = contentColor
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Medium,
+                    color = contentColor.copy(alpha = 0.9f)
                 )
             )
 
@@ -144,12 +143,13 @@ private fun HighPriorityAlertOverlayContent(
 
             Text(
                 text = alert.title,
-                style = MaterialTheme.typography.headlineSmall.copy(
-                    color = contentColor.copy(alpha = 0.9f)
+                style = MaterialTheme.typography.headlineLarge.copy(
+                    fontWeight = FontWeight.Black,
+                    color = contentColor
                 )
             )
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(64.dp))
 
             Button(
                 onClick = onDismiss,
@@ -163,18 +163,16 @@ private fun HighPriorityAlertOverlayContent(
             ) {
                 Text(
                     text = stringResource(R.string.received),
-                    style = TextStyle(
-                        color = containerColor,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    color = containerColor,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
                 )
             }
         }
     }
 }
 
-@Preview
+@Preview(locale = "ar")
 @Composable
 private fun HighPriorityAlertOverlayAssistancePreview() {
     NabdaTheme {
@@ -191,7 +189,7 @@ private fun HighPriorityAlertOverlayAssistancePreview() {
     }
 }
 
-@Preview
+@Preview(locale = "ar")
 @Composable
 private fun HighPriorityAlertOverlayEmergencyPreview() {
     NabdaTheme {
