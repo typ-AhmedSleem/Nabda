@@ -50,9 +50,8 @@ fun VibratorTestScreen(
             HapticEnginePattern.ActionSent,
             HapticEnginePattern.ActionNotConfirmed,
             HapticEnginePattern.NormalRequest,
-            HapticEnginePattern.HelpRequest,
-            HapticEnginePattern.EmergencyAlert,
-            HapticEnginePattern.FallAlert
+            HapticEnginePattern.AssistanceRequest,
+            HapticEnginePattern.EmergencyRequest,
         )
     }
 

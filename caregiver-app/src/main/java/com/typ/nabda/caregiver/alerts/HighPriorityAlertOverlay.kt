@@ -57,8 +57,13 @@ fun HighPriorityAlertOverlay(
 
     LaunchedEffect(isVisible) {
         if (isVisible) {
+            val hapticPattern = if (alert.priority == ActionPriority.ASSISTANCE) {
+                HapticEnginePattern.AssistanceRequest
+            } else {
+                HapticEnginePattern.EmergencyRequest
+            }
             while (isActive) {
-                hapticEngine.performHaptic(HapticEnginePattern.FallAlert)
+                hapticEngine.performHaptic(hapticPattern)
                 delay(2000) // Repeat pattern every 2 seconds
             }
         }

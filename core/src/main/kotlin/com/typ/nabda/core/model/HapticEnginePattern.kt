@@ -63,20 +63,15 @@ sealed class HapticEnginePattern(
     )
 
     @Serializable
-    data object HelpRequest : HapticEnginePattern(
+    data object AssistanceRequest : HapticEnginePattern(
         amplitudes = intArrayOf(0, 200, 0, 200, 0, 200),
         durations = longArrayOf(100, 200, 100, 200, 100, 200)
     )
 
     @Serializable
-    data object EmergencyAlert : HapticEnginePattern(
+    data object EmergencyRequest : HapticEnginePattern(
         amplitudes = intArrayOf(0, 255, 0, 255, 0, 255, 0, 255),
         durations = longArrayOf(50, 300, 50, 300, 50, 300, 50, 300)
     )
 
-    @Serializable
-    data object FallAlert : HapticEnginePattern(
-        amplitudes = intArrayOf(0, 255, 0, 255, 0, 255, 0, 255),
-        durations = longArrayOf(50, 300, 50, 300, 50, 300, 50, 300)
-    )
 }
