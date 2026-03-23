@@ -3,7 +3,10 @@
     <string name="status_idle">غير متصل</string>
     <string name="status_scanning">جاري البحث</string>
     <string name="status_pairing">جاري الاقتران</string>
-    <string name="status_paired">تم الاقتران</string>
-    <string name="status_failed">فشل</string>
+    <string name="status_connecting">جاري الاتصال…</string>
+    <string name="status_paired">متصل</string>
+    <string name="status_disconnected">تم قطع الاتصال</string>
+    <string name="status_reconnecting">جاري إعادة الاتصال…</string>
+    <string name="status_failed">فشل الاتصال</string>
     <string name="status_wifi_disabled">الواي فاي معطل</string>
 </resources>
