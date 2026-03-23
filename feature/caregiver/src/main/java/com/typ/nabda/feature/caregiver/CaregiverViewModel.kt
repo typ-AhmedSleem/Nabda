@@ -56,6 +56,9 @@ class CaregiverViewModel(
     val pairingStatus: StateFlow<ConnectionStatus> = LocalClientRegistry.status
     val connectedHost = discoveryManager.discoveredHost
 
+    private val _lastGeocodedLocationLabel = MutableStateFlow(context.getString(R.string.location_unavailable))
+    val lastGeocodedLocationLabel = _lastGeocodedLocationLabel.asStateFlow()
+
     // Navigation events
     private val _navigationEvents = MutableSharedFlow<CaregiverNavigationEvent>()
     val navigationEvents = _navigationEvents.asSharedFlow()
@@ -65,6 +68,14 @@ class CaregiverViewModel(
             pairingStatus.collect { status ->
                 if (status == ConnectionStatus.IDLE) {
                     _navigationEvents.emit(CaregiverNavigationEvent.NavigateToDiscovery)
+                }
+            }
+        }
+        viewModelScope.launch {
+            LocalClientRegistry.telemetry.collect { payload ->
+                if (payload != null) {
+                    Log.i("NABDA_CaregiverViewModel", "Geocoding location in ViewModel for received telemetry.")
+                    _lastGeocodedLocationLabel.value = geocoder.geocode(payload.location)
                 }
             }
         }
@@ -82,6 +93,7 @@ class CaregiverViewModel(
         LocalClientRegistry.telemetry,
         pairingStatus
     ) { localTelemetry, status ->
+        Log.i("NABDA_CaregiverViewModel", "Handling telemetry in ViewModel...")
         if (localTelemetry != null) {
             val deviceStatus = when (status) {
                 ConnectionStatus.PAIRED -> DeviceStatus.ONLINE
@@ -108,6 +120,8 @@ class CaregiverViewModel(
         val timestamp = if (payload.timestamp > 0) payload.timestamp else System.currentTimeMillis()
         val lastSeenLabel = timeFormatter.format(Date(timestamp))
 
+        Log.i("NABDA_CaregiverViewModel", "Mapping TelemetryHeartbeatPayload to DeviceTelemetryUiState.")
+
         return DeviceTelemetryUiState(
             deviceStatus = status,
             rawTimestamp = timestamp,
@@ -118,7 +132,7 @@ class CaregiverViewModel(
             signalStrength = payload.signalStrength ?: 0,
             isSilentMode = payload.isSilentMode ?: false,
             batteryPercentage = payloadBatteryPercentage,
-            locationLabel = geocoder.geocode(payload.location),
+            locationLabel = lastGeocodedLocationLabel.value,
         )
     }
 
