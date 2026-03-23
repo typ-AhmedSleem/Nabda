@@ -1,17 +1,23 @@
 package com.typ.nabda.designsystem.theme
 
 import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Shapes
+import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.PreviewDynamicColors
 import androidx.compose.ui.unit.dp
 
 private val DarkColorScheme = darkColorScheme(
@@ -48,9 +54,9 @@ val NabdaShapes = Shapes(
 
 @Composable
 fun NabdaTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = false,
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = false,
+    dynamicColor: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     val colorScheme = when {
@@ -69,4 +75,41 @@ fun NabdaTheme(
         shapes = NabdaShapes,
         content = content
     )
+}
+
+@PreviewDynamicColors
+@Composable
+private fun NabdaThemePreview() {
+    NabdaTheme {
+        Scaffold { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = "Primary Color Text",
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Text(
+                    text = "Secondary Color Text",
+                    color = MaterialTheme.colorScheme.secondary,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Text(
+                    text = "Background Color Text",
+                    color = MaterialTheme.colorScheme.background,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+
+                Button(
+                    onClick = { },
+                    modifier = Modifier.padding(top = 16.dp)
+                ) {
+                    Text("Primary Button")
+                }
+            }
+        }
+    }
 }
