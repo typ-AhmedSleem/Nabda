@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BatteryAlert
@@ -442,7 +443,7 @@ fun ActionsScreenContent(
             style = MaterialTheme.typography.titleLarge.copy(
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Black,
-                color = Color(0xFF3C3228)
+                color = MaterialTheme.colorScheme.onBackground
             )
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -450,7 +451,7 @@ fun ActionsScreenContent(
             text = stringResource(R.string.quick_actions_subtitle),
             style = MaterialTheme.typography.titleLarge.copy(
                 fontSize = 16.sp,
-                color = Color(0xFF7A8499)
+                color = MaterialTheme.colorScheme.inverseSurface
             )
         )
         Spacer(modifier = Modifier.height(32.dp))
@@ -485,8 +486,8 @@ fun QuickActionCard(
     Column(
         modifier = modifier
             .heightIn(min = 164.dp)
-            .clip(MaterialTheme.shapes.extraLarge)
-            .background(Color.White)
+            .clip(RoundedCornerShape(25))
+            .background(item.iconBg)
             .clickable(onClick = onClick)
             .padding(
                 horizontal = 16.dp,
@@ -498,13 +499,14 @@ fun QuickActionCard(
             modifier = Modifier
                 .size(60.dp)
                 .align(Alignment.CenterHorizontally)
-                .background(item.iconBg, MaterialTheme.shapes.extraLarge),
+                .clip(RoundedCornerShape(40))
+                .background(item.iconColor),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = item.icon,
                 contentDescription = null,
-                tint = item.iconColor,
+                tint = item.iconBg,
                 modifier = Modifier.size(28.dp)
             )
         }
@@ -517,13 +519,13 @@ fun QuickActionCard(
             style = MaterialTheme.typography.titleLarge.copy(
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF3C3228)
+                color = item.iconColor
             )
         )
     }
 }
 
-//@Preview(locale = "ar")
+@Preview(locale = "ar")
 @Composable
 fun CaregiverDashboardPreview() {
     var selectedTab by remember { mutableStateOf(CaregiverTab.METRICS) }
@@ -588,7 +590,7 @@ fun MetricsScreenPreview() {
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Preview(locale = "ar")
-//@PreviewLightDark
+@PreviewLightDark
 @Composable
 fun ActionsScreenPreview() {
     NabdaTheme {
