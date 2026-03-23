@@ -1,5 +1,6 @@
 package com.typ.nabda.infrastructure.localnetwork.client
 
+import android.util.Log
 import com.typ.nabda.core.model.TelemetryHeartbeatPayload
 import com.typ.nabda.infrastructure.localnetwork.model.ActionPayload
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,6 +23,7 @@ object LocalClientRegistry {
 
     fun updateTelemetry(payload: TelemetryHeartbeatPayload?) {
         _telemetry.value = payload
+        Log.i("NABDA_LocalClientRegistry", "Received telemetry: '$payload'.")
     }
 
     fun updateAlert(payload: ActionPayload?) {
