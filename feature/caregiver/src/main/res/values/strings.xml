@@ -55,6 +55,7 @@
     <string name="camera_title">Camera</string>
     <string name="camera_desc">Used to scan QR codes for pairing with other devices.</string>
     <string name="continue_label">Continue</string>
+    <string name="cant_get_location">Can\'t get his location</string>
     <string name="location_unavailable">Location unavailable</string>
     <string name="unknown_location">Unknown Location</string>
     <string name="action_sent">Action Sent</string>

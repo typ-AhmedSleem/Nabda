@@ -28,5 +28,5 @@
     <string name="caregiver_status_channel">حالة المرافق</string>
     <string name="high_priority_alert">تنبيه طارئ</string>
     <string name="assistance_priority_alert">مساعدة مطلوبه</string>
-    <string name="received">تم الاستلام</string>
+    <string name="received">تمام استلمته</string>
 </resources>
