@@ -18,6 +18,7 @@ import com.typ.nabda.feature.caregiver.CaregiverScreen
 import com.typ.nabda.feature.caregiver.onboarding.CaregiverHowToScreen
 import com.typ.nabda.feature.caregiver.onboarding.CaregiverPermissionsScreen
 import com.typ.nabda.feature.caregiver.onboarding.CaregiverWelcomeScreen
+import com.typ.nabda.feature.caregiver.permission.NotificationPermissionStartupScreen
 import com.typ.nabda.feature.pairing.PairingScreen
 import com.typ.nabda.infrastructure.localnetwork.client.LocalClientRegistry
 import org.koin.compose.viewmodel.koinViewModel
@@ -28,9 +29,20 @@ fun AppNavigation() {
     val currentAlert by LocalClientRegistry.alerts.collectAsStateWithLifecycle()
 
     Box(modifier = Modifier.fillMaxSize()) {
-        NavHost(navController = navController, startDestination = "pairing_scanner") {
+        NavHost(navController = navController, startDestination = "notification_permission_startup") {
+            composable("notification_permission_startup") {
+                NotificationPermissionStartupScreen(
+                    onPermissionGranted = {
+                        navController.navigate("pairing_scanner") {
+                            popUpTo("notification_permission_startup") { inclusive = true }
+                        }
+                    }
+                )
+            }
+
             composable("pairing_scanner") {
                 val viewModel: WifiPairingViewModel = koinViewModel()
+
                 PairingScannerScreen(
                     viewModel = viewModel,
                     onPairingSuccess = {

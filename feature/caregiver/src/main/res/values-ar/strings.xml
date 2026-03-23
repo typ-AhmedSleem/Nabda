@@ -26,7 +26,7 @@
     <string name="unknown">مش معروف</string>
     <string name="allowed">مسموح</string>
     <string name="denied">مرفوض</string>
-    <string name="notifications">التنبيهات</string>
+    <string name="notifications">الإشعارات</string>
     <string name="silent">صامت</string>
     <string name="normal">عادي</string>
     <string name="deaf_device_mode">وضع جهاز الأصم</string>
@@ -103,4 +103,9 @@
     <string name="signal_strength_format">الإشارة %1$s</string>
     <string name="geofence_position">الموقع الجغرافي</string>
     <string name="located_in_format">موجود في %1$s</string>
+
+    <string name="checking_permissions">جاري التحقق من الأذونات…</string>
+    <string name="notification_permission_denied">إذن التنبيهات معطل بشكل دائم. يرجى تفعيله من الإعدادات لاستلام التنبيهات الهامة.</string>
+    <string name="open_notification_settings">افتح إعدادات الإشعارات</string>
 </resources>
+
