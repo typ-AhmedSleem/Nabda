@@ -6,6 +6,8 @@
     <string name="i_am_a_deaf_user">I am a\nDeaf User</string>
     <string name="i_am_a_caregiver">I am a\nCaregiver</string>
     <string name="searching_for_devices">Searching network…</string>
+    <string name="connecting_to_device">Connecting to device…</string>
+    <string name="reconnecting_to_device">Reconnecting to device…</string>
     <string name="make_sure_device_on">Looking for any NABDA devices in your network</string>
     <string name="found_devices">Found Devices</string>
     <string name="discovered_count">%1$d DISCOVERED</string>
@@ -28,4 +30,6 @@
     <string name="high_priority_alert">HIGH PRIORITY ALERT</string>
     <string name="assistance_priority_alert">ASSISTANCE REQUIRED</string>
     <string name="received">RECEIVED</string>
+    <string name="pairing_in_progress">Pairing with device</string>
+    <string name="pairing_description">Please wait until pairing is complete</string>
 </resources>

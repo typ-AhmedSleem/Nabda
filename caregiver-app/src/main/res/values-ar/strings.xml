@@ -7,7 +7,11 @@
     <string name="i_am_a_deaf_user">أنا مستخدم\nأصم كفيف</string>
     <string name="i_am_a_caregiver">أنا\nمرافق</string>
     <string name="searching_for_devices">بندور على أجهزة…</string>
+    <string name="connecting_to_device">جاري الاتصال بالجهاز…</string>
+    <string name="reconnecting_to_device">جاري إعادة الاتصال بالجهاز…</string>
+    <string name="pairing_in_progress">يتم الربط مع التطبيق…</string>
     <string name="make_sure_device_on">بندور على أي أجهزة نبضة في الشبكة بتاعتك</string>
+    <string name="pairing_description">يرجى الانتظار حتى يكتمل الإقران</string>
     <string name="found_devices">الأجهزة الموجودة</string>
     <string name="discovered_count">لقينا %1$d</string>
     <string name="pair">ربط</string>
