@@ -44,6 +44,7 @@ class CaregiverService : Service(), KoinComponent {
     private var nsdManager: NsdManager? = null
     private var multicastLock: WifiManager.MulticastLock? = null
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
+    private var lastPairedHost: String? = null
     private var discoveryListener: NsdManager.DiscoveryListener? = null
 
     companion object {
@@ -126,7 +127,7 @@ class CaregiverService : Service(), KoinComponent {
         } finally {
             discoveryListener = null
         }
-        telemetryClient?.disconnect()
+        telemetryClient?.stop()
         telemetryClient = null
         LocalClientRegistry.updateStatus(ConnectionStatus.IDLE)
         updateNotification(ConnectionStatus.IDLE)
@@ -153,7 +154,18 @@ class CaregiverService : Service(), KoinComponent {
                                 Log.d("NABDA_CaregiverService", "Service resolved: ${serviceInfo.host}:${serviceInfo.port}")
                                 val host = serviceInfo.host.hostAddress ?: ""
                                 val port = serviceInfo.port
-                                pairWithDevice(host, port)
+
+                                val currentStatus = LocalClientRegistry.status.value
+                                val isAlreadyConnecting = currentStatus == ConnectionStatus.CONNECTING ||
+                                        currentStatus == ConnectionStatus.CONNECTED ||
+                                        currentStatus == ConnectionStatus.RECONNECTING
+
+                                // Only pair if we are not already connected/connecting OR if the host changed
+                                if (!isAlreadyConnecting || host != lastPairedHost) {
+                                    pairWithDevice(host, port)
+                                } else {
+                                    Log.d("NABDA_CaregiverService", "Skipping pairing, already connected/connecting to $host or host is the same.")
+                                }
                             }
                         })
                     }
@@ -195,16 +207,27 @@ class CaregiverService : Service(), KoinComponent {
         )
     }
 
-    private fun pairWithDevice(host: String, port: Int) {
+    fun pairWithDevice(host: String, port: Int) {
+        if (lastPairedHost == host && LocalClientRegistry.status.value == ConnectionStatus.CONNECTED) {
+            Log.d("NABDA_CaregiverService", "Already connected to $host, skipping.")
+            return
+        }
+
+        Log.i("NABDA_CaregiverService", "Pairing with device at $host:$port (Previous: $lastPairedHost)")
+        lastPairedHost = host
+
+        // Stop current client if any
+        telemetryClient?.stop()
+        telemetryClient = null
+
+        // Update registry and UI
         LocalClientRegistry.updateStatus(ConnectionStatus.PAIRING)
         updateNotification(ConnectionStatus.PAIRING)
 
         telemetryClient = TelemetryClient(host, port)
         telemetryClient?.connect()
 
-        LocalClientRegistry.updateStatus(ConnectionStatus.PAIRED)
         deviceDiscoveryManager.updateDiscoveredHost(host, port)
-        updateNotification(ConnectionStatus.PAIRED)
 
         serviceScope.launch {
             launch {
@@ -222,16 +245,13 @@ class CaregiverService : Service(), KoinComponent {
                     )
                 }
             }
-
+            // Observation of status is now handled reactive by TelemetryClient updating LocalClientRegistry.status
             launch {
-                telemetryClient?.isConnected?.collect { connected ->
-                    if (connected) {
-                        LocalClientRegistry.updateStatus(ConnectionStatus.PAIRED)
+                LocalClientRegistry.status.collect { status ->
+                    updateNotification(status)
+                    if (status == ConnectionStatus.CONNECTED) {
                         deviceDiscoveryManager.updateDiscoveredHost(host, port)
-                        updateNotification(ConnectionStatus.PAIRED)
-                    } else {
-                        LocalClientRegistry.updateStatus(ConnectionStatus.IDLE)
-                        updateNotification(ConnectionStatus.IDLE)
+                    } else if (status == ConnectionStatus.IDLE || status == ConnectionStatus.FAILED) {
                         deviceDiscoveryManager.clearDiscoveredHost()
                     }
                 }
@@ -254,6 +274,9 @@ class CaregiverService : Service(), KoinComponent {
 
     override fun onDestroy() {
         stopScanning()
+        telemetryClient?.stop()
+        telemetryClient = null
+        lastPairedHost = null
         releaseMulticastLock()
         unregisterNetworkCallback()
         currentInstance = null
