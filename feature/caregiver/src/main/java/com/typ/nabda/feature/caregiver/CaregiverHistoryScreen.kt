@@ -1,5 +1,6 @@
 package com.typ.nabda.feature.caregiver
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -19,6 +20,7 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,17 +28,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.typ.nabda.core.model.ActionPriority
 import com.typ.nabda.core.model.Alert
 import com.typ.nabda.core.model.CaregiverAction
+import com.typ.nabda.designsystem.theme.NabdaTheme
 import org.koin.compose.viewmodel.koinViewModel
 import org.ocpsoft.prettytime.PrettyTime
 import java.util.Date
@@ -70,7 +71,6 @@ fun CaregiverHistoryContent(
     selectedFilter: CaregiverAction?,
     onFilterSelected: (CaregiverAction?) -> Unit,
 ) {
-    LocalContext.current
     val prettyTime = remember { PrettyTime(Locale.getDefault()) }
 
     Column(
@@ -81,7 +81,7 @@ fun CaregiverHistoryContent(
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(
                     text = stringResource(R.string.no_history_available),
-                    style = TextStyle(color = SecondaryTextColor, fontSize = 16.sp)
+                    style = MaterialTheme.typography.titleMedium.copy(color = SecondaryTextColor, fontSize = 16.sp)
                 )
             }
         } else {
@@ -97,18 +97,21 @@ fun CaregiverHistoryContent(
     }
 }
 
-@Preview(showBackground = true)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@PreviewLightDark
 @Composable
 fun CaregiverHistoryPreview() {
-    MaterialTheme {
-        CaregiverHistoryContent(
-            alerts = listOf(
-                Alert("help_request", "Help Requested", ActionPriority.NORMAL, System.currentTimeMillis() - 60000),
-                Alert("fall", "Fall Detected", ActionPriority.EMERGENCY, System.currentTimeMillis() - 3600000)
-            ),
-            selectedFilter = CaregiverAction.HELP_REQUEST,
-            onFilterSelected = {}
-        )
+    NabdaTheme {
+        Scaffold {
+            CaregiverHistoryContent(
+                alerts = listOf(
+                    Alert("help_request", "Help Requested", ActionPriority.NORMAL, System.currentTimeMillis() - 60000),
+                    Alert("fall", "Fall Detected", ActionPriority.EMERGENCY, System.currentTimeMillis() - 3600000)
+                ),
+                selectedFilter = CaregiverAction.HELP_REQUEST,
+                onFilterSelected = {}
+            )
+        }
     }
 }
 
@@ -130,7 +133,7 @@ fun FilterChip(
     ) {
         Text(
             text = label,
-            style = TextStyle(
+            style = MaterialTheme.typography.titleMedium.copy(
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 color = if (isSelected) Color.White else PrimaryTextColor
@@ -151,7 +154,7 @@ fun HistoryItem(alert: Alert, prettyTime: PrettyTime) {
         Icon(
             imageVector = Icons.Default.Notifications,
             contentDescription = null,
-            tint = PrimaryTextColor,
+            tint = MaterialTheme.colorScheme.onBackground.copy(0.8f),
             modifier = Modifier.size(24.dp)
         )
 
@@ -159,21 +162,17 @@ fun HistoryItem(alert: Alert, prettyTime: PrettyTime) {
 
         Text(
             text = alert.actionName,
-            style = TextStyle(
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = PrimaryTextColor,
-                letterSpacing = 0.5.sp
-            ),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground,
+            letterSpacing = 0.5.sp,
             modifier = Modifier.weight(1f)
         )
 
         Text(
             text = prettyTime.format(Date(alert.timestamp)),
-            style = TextStyle(
-                fontSize = 16.sp,
-                color = SecondaryTextColor.copy(alpha = 0.8f)
-            )
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
+            fontSize = 16.sp,
         )
     }
 }
