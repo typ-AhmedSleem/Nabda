@@ -9,28 +9,38 @@ import java.util.Locale
 
 class LocationGeocoder(private val context: Context) {
 
-    suspend fun geocode(snapshot: LocationSnapshot?): String = withContext(Dispatchers.IO) {
-        if (snapshot == null) return@withContext context.getString(R.string.location_unavailable)
+    private val cache = mutableMapOf<Pair<Double, Double>, String>()
 
-        try {
-            val geocoder = Geocoder(context, Locale.getDefault())
-            val addresses = geocoder.getFromLocation(snapshot.latitude, snapshot.longitude, 1)
-            val address = addresses?.firstOrNull()
+    suspend fun geocode(snapshot: LocationSnapshot?): String {
+        if (snapshot == null) return context.getString(R.string.location_unavailable)
 
-            if (address != null) {
-                val country = address.countryName ?: ""
-                val city = address.locality ?: address.adminArea ?: ""
-                val area = address.subLocality ?: address.thoroughfare ?: ""
+        // Check cache first
+        val coords = snapshot.latitude to snapshot.longitude
+        cache[coords]?.let { return it }
 
-                listOf(country, city, area)
-                    .filter { it.isNotBlank() }
-                    .joinToString(", ")
-            } else {
-                context.getString(R.string.unknown_location)
+        return withContext(Dispatchers.IO) {
+            try {
+                val geocoder = Geocoder(context, Locale.getDefault())
+                val addresses = geocoder.getFromLocation(snapshot.latitude, snapshot.longitude, 1)
+                val address = addresses?.firstOrNull()
+
+                if (address != null) {
+                    val country = address.countryName ?: ""
+                    val city = address.locality ?: address.adminArea ?: ""
+                    val area = address.subLocality ?: address.thoroughfare ?: ""
+
+                    val result = listOf(country, city, area)
+                        .filter { it.isNotBlank() }
+                        .joinToString(", ")
+                    cache[coords] = result
+                    result
+                } else {
+                    context.getString(R.string.unknown_location)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                context.getString(R.string.location_unavailable)
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            context.getString(R.string.location_unavailable)
         }
     }
 }
