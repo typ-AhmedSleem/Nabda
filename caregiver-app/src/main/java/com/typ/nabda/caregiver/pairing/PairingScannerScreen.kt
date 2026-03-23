@@ -60,7 +60,7 @@ fun PairingScannerScreen(
     val status by viewModel.pairingStatus.collectAsStateWithLifecycle()
 
     LaunchedEffect(status) {
-        if (status == ConnectionStatus.PAIRED) {
+        if (status == ConnectionStatus.CONNECTED) {
             onPairingSuccess()
         }
     }
@@ -129,19 +129,32 @@ fun PairingScannerContent(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    val titleRes = when (status) {
+                        ConnectionStatus.CONNECTING -> R.string.connecting_to_device
+                        ConnectionStatus.RECONNECTING -> R.string.reconnecting_to_device
+                        ConnectionStatus.PAIRING -> R.string.pairing_in_progress
+                        else -> R.string.searching_for_devices
+                    }
+
                     Text(
-                        text = stringResource(id = R.string.searching_for_devices),
+                        text = stringResource(id = titleRes),
                         style = MaterialTheme.typography.headlineSmall.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 28.sp
                         ),
-                        color = Color(0xFF333333)
+                        color = Color(0xFF333333),
+                        textAlign = TextAlign.Center
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
+                    val subtitleRes = when (status) {
+                        ConnectionStatus.CONNECTING, ConnectionStatus.RECONNECTING -> R.string.pairing_description
+                        else -> R.string.make_sure_device_on
+                    }
+
                     Text(
-                        text = stringResource(id = R.string.make_sure_device_on),
+                        text = stringResource(id = subtitleRes),
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color(0xFF757575),
                         textAlign = TextAlign.Center
