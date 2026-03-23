@@ -45,14 +45,13 @@ class NabdaLocationManager(private val context: Context) {
                     .checkLocationSettings(locationSettingsRequest)
                     .addOnSuccessListener {
                         val currentLocationRequest = CurrentLocationRequest.Builder()
-                            .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                            .setPriority(Priority.PRIORITY_BALANCED_POWER_ACCURACY)
                             .build()
 
                         locationManager
                             .getCurrentLocation(currentLocationRequest, cts.token)
                             .addOnSuccessListener { location ->
                                 if (location != null) {
-                                    Log.d("Nabda_LocationManager", "Retrieved current location from system.")
                                     lastKnownLocation = location
                                     lastKnownLocationRetrieveTime = System.currentTimeMillis()
                                     continuation.resume(
@@ -60,9 +59,24 @@ class NabdaLocationManager(private val context: Context) {
                                             latitude = location.latitude,
                                             longitude = location.longitude,
                                             accuracyMeters = location.accuracy
-                                        )
+                                        ).also {
+                                            Log.d("Nabda_LocationManager", "Retrieved current location from system. Result='$it'.")
+                                        }
                                     )
                                 } else {
+                                    val cachedLocation = lastKnownLocation
+                                    if (cachedLocation != null) {
+                                        continuation.resume(
+                                            LocationSnapshot(
+                                                latitude = cachedLocation.latitude,
+                                                longitude = cachedLocation.longitude,
+                                                accuracyMeters = cachedLocation.accuracy
+                                            ).also {
+                                                Log.d("Nabda_LocationManager", "Retrieved last known cached location. Result='$it'.")
+                                            }
+                                        )
+                                        return@addOnSuccessListener
+                                    }
                                     Log.w("Nabda_LocationManager", "Current location is null.")
                                     continuation.resume(null)
                                 }
