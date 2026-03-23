@@ -44,10 +44,8 @@ class DeafBlindViewModel(
     init {
         // Observe connected clients from LocalServerRegistry
         viewModelScope.launch {
-            while (true) {
-                val count = LocalServerRegistry.activeServer?.getConnectedClientsCount() ?: 0
+            LocalServerRegistry.connectedClientsCount.collect { count ->
                 _uiState.update { it.copy(connectedClientsCount = count) }
-                delay(2000)
             }
         }
     }

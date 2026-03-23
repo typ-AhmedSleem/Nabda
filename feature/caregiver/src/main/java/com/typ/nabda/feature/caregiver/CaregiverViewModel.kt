@@ -24,6 +24,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
@@ -72,12 +74,15 @@ class CaregiverViewModel(
             }
         }
         viewModelScope.launch {
-            LocalClientRegistry.telemetry.collect { payload ->
-                if (payload != null) {
-                    Log.i("NABDA_CaregiverViewModel", "Geocoding location in ViewModel for received telemetry.")
-                    _lastGeocodedLocationLabel.value = geocoder.geocode(payload.location)
+            LocalClientRegistry.telemetry
+                .map { it?.location }
+                .distinctUntilChanged()
+                .collect { location ->
+                    if (location != null) {
+                        Log.i("NABDA_CaregiverViewModel", "Geocoding location in ViewModel for received telemetry.")
+                        _lastGeocodedLocationLabel.value = geocoder.geocode(location)
+                    }
                 }
-            }
         }
     }
 
@@ -96,7 +101,7 @@ class CaregiverViewModel(
         Log.i("NABDA_CaregiverViewModel", "Handling telemetry in ViewModel...")
         if (localTelemetry != null) {
             val deviceStatus = when (status) {
-                ConnectionStatus.PAIRED -> DeviceStatus.ONLINE
+                ConnectionStatus.CONNECTED -> DeviceStatus.ONLINE
                 else -> DeviceStatus.DELAYED
             }
             mapToUiState(localTelemetry, deviceStatus)
