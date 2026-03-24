@@ -13,4 +13,13 @@
     <string name="sending">SENDING…</string>
     <string name="sent">SENT ✅</string>
     <string name="failed">FAILED ❌</string>
+    <string name="permissions">Permissions</string>
+    <string name="enable_permissions">Enable permissions</string>
+    <string name="permissions_subtitle">To ensure the system works correctly and can track your safety, please enable the following permissions.</string>
+    <string name="notifications_title">Notifications</string>
+    <string name="notifications_desc">Receive alerts and status updates from your caregiver.</string>
+    <string name="location_title">Location</string>
+    <string name="location_desc">Used to track your location for safety and emergency response.</string>
+    <string name="continue_label">Continue</string>
 </resources>
+

@@ -13,4 +13,13 @@
     <string name="sending">جاري الإرسال…</string>
     <string name="sent">تم الإرسال ✅</string>
     <string name="failed">فشل الإرسال ❌</string>
+    <string name="permissions">الأذونات</string>
+    <string name="enable_permissions">تفعيل الأذونات</string>
+    <string name="permissions_subtitle">عشان النظام يشتغل صح ونقدر نطمن عليك، محتاجينك تفعل الأذونات دي.</string>
+    <string name="notifications_title">التنبيهات</string>
+    <string name="notifications_desc">استلم تنبيهات وتحديثات من المرافق.</string>
+    <string name="location_title">الموقع</string>
+    <string name="location_desc">بنستخدمه عشان نحدد مكانك عشان الأمان في حالات الطوارئ.</string>
+    <string name="continue_label">كمل</string>
 </resources>
+
