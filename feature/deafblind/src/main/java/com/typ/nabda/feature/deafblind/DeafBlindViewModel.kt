@@ -147,22 +147,6 @@ class DeafBlindViewModel(
     }
 
     private fun mapInputToGesture(input: GestureInput): GestureType {
-        return when (input.fingerCount) {
-            1 -> when (input.direction) {
-                com.typ.nabda.core.model.GestureDirection.UP -> GestureType.ONE_FINGER_SWIPE_UP
-                com.typ.nabda.core.model.GestureDirection.DOWN -> GestureType.ONE_FINGER_SWIPE_DOWN
-                com.typ.nabda.core.model.GestureDirection.RIGHT -> GestureType.ONE_FINGER_SWIPE_RIGHT
-                else -> GestureType.UNKNOWN
-            }
-
-            2 -> when (input.direction) {
-                com.typ.nabda.core.model.GestureDirection.UP -> GestureType.TWO_FINGER_SWIPE_UP
-                com.typ.nabda.core.model.GestureDirection.RIGHT -> GestureType.TWO_FINGER_SWIPE_RIGHT
-                else -> GestureType.UNKNOWN
-            }
-
-            3 -> GestureType.THREE_FINGER_SWIPE_DOWN
-            else -> GestureType.UNKNOWN
-        }
+        return com.typ.nabda.core.gestures.GestureClassifier.classify(input)
     }
 }
