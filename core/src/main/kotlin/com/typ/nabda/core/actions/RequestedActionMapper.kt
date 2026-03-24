@@ -107,10 +107,10 @@ object RequestedActionMapper {
             hapticPattern = HapticEnginePattern.NormalRequest
         ),
         GestureType.FOUR_FINGER_SWIPE_DOWN to RequestedAction(
-            id = "",
-            name = "",
+            id = "FEELING_PANIC",
+            name = "أنا قلقان",
             description = "",
-            priority = ActionPriority.NORMAL,
+            priority = ActionPriority.EMERGENCY,
             hapticPattern = HapticEnginePattern.NormalRequest
         ),
         GestureType.FOUR_FINGER_SWIPE_RIGHT to RequestedAction(
