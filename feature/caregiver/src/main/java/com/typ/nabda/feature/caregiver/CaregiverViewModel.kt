@@ -86,6 +86,12 @@ class CaregiverViewModel(
         }
     }
 
+    fun emitEvent(event: CaregiverNavigationEvent) {
+        viewModelScope.launch {
+            _navigationEvents.emit(event)
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         discoveryManager.stopDiscovery()

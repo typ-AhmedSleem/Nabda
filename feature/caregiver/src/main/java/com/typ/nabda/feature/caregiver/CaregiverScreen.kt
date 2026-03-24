@@ -41,7 +41,9 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,13 +53,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -69,6 +72,9 @@ import com.typ.nabda.core.model.ConnectivitySource
 import com.typ.nabda.designsystem.theme.NabdaTheme
 import com.typ.nabda.feature.caregiver.actions.CaregiverQuickActions
 import com.typ.nabda.feature.caregiver.models.QuickActionItem
+import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import org.koin.compose.viewmodel.koinViewModel
 
 enum class CaregiverTab {
@@ -90,12 +96,25 @@ fun CaregiverScreen(
 ) {
     val isSilent by viewModel.isPhoneSilent.collectAsStateWithLifecycle()
     val connectedHost by viewModel.connectedHost.collectAsStateWithLifecycle()
-    val isConnected by viewModel.isInternetConnected.collectAsStateWithLifecycle()
     val notifGranted by viewModel.isNotificationPermissionGranted.collectAsStateWithLifecycle()
     val telemetryState by viewModel.telemetryUiState.collectAsStateWithLifecycle()
     var selectedTab by remember { mutableStateOf(CaregiverTab.METRICS) }
     val alerts by viewModel.filteredAlerts.collectAsStateWithLifecycle()
     val selectedFilter by viewModel.selectedFilter.collectAsStateWithLifecycle()
+    val isConnected by remember(telemetryState) {
+        derivedStateOf {
+            telemetryState != null && telemetryState?.deviceStatus == DeviceStatus.ONLINE
+        }
+    }
+
+    LaunchedEffect(isConnected) {
+        if (!isConnected) {
+            delay(LocalNetworkConstants.CONNECT_TIMEOUT_MS)
+            if (isActive and !isConnected) {
+                viewModel.emitEvent(CaregiverViewModel.CaregiverNavigationEvent.NavigateToDiscovery)
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.navigationEvents.collect { event ->
@@ -148,37 +167,54 @@ fun CaregiverDashboardContent(
             )
         }
     ) { innerPadding ->
-        AnimatedContent(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            targetState = selectedTab,
-            label = "TabAnimation"
-        ) { caregiverTab ->
-            when (caregiverTab) {
-                CaregiverTab.METRICS -> {
-                    MetricsScreen(
-                        isConnected = isConnected,
-                        notifGranted = notifGranted,
-                        isSilent = isSilent,
-                        telemetryState = telemetryState,
-                        connectedHost = connectedHost
-                    )
-                }
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            AnimatedContent(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                targetState = selectedTab,
+                label = "TabAnimation"
+            ) { caregiverTab ->
+                when (caregiverTab) {
+                    CaregiverTab.METRICS -> {
+                        MetricsScreen(
+                            isConnected = isConnected,
+                            notifGranted = notifGranted,
+                            isSilent = isSilent,
+                            telemetryState = telemetryState,
+                            connectedHost = connectedHost
+                        )
+                    }
 
-                CaregiverTab.ACTIONS -> {
-                    ActionsScreenContent(
-                        onActionClick = onActionClick
-                    )
-                }
+                    CaregiverTab.ACTIONS -> {
+                        ActionsScreenContent(
+                            onActionClick = onActionClick
+                        )
+                    }
 
-                CaregiverTab.HISTORY -> {
-                    CaregiverHistoryContent(
-                        alerts = alerts,
-                        selectedFilter = selectedFilter,
-                        onFilterSelected = onFilterSelected
-                    )
+                    CaregiverTab.HISTORY -> {
+                        CaregiverHistoryContent(
+                            alerts = alerts,
+                            selectedFilter = selectedFilter,
+                            onFilterSelected = onFilterSelected
+                        )
+                    }
                 }
+            }
+
+            // Disconnected overlay
+            val isDisconnected by remember(telemetryState) {
+                derivedStateOf {
+                    telemetryState == null
+                            || telemetryState.deviceStatus != DeviceStatus.ONLINE
+                }
+            }
+
+            if (isDisconnected) {
+                DisconnectedFromServerOverlay()
             }
         }
     }
@@ -251,31 +287,41 @@ fun MetricsScreen(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp, vertical = 48.dp),
+            .padding(horizontal = 24.dp, vertical = 42.dp),
         verticalArrangement = Arrangement.spacedBy(40.dp)
     ) {
         Column {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Box(
+            if (connectedHost != null) {
+                Row(
                     modifier = Modifier
-                        .size(8.dp)
-                        .background(TargetGreen, CircleShape)
-                )
-                Text(
-                    text = connectedHost?.removePrefix("http://") ?: stringResource(R.string.connected_to_nabda_device),
-                    style = TextStyle(
-                        fontSize = 12.sp,
-                        fontFamily = FontFamily.Monospace,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = TargetGreen,
-                        letterSpacing = 1.sp
+                        .clip(MaterialTheme.shapes.extraLarge)
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .padding(
+                            horizontal = 8.dp,
+                            vertical = 4.dp
+                        ),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .background(MaterialTheme.colorScheme.onPrimaryContainer, CircleShape)
                     )
-                )
+
+                    Text(
+                        text = connectedHost.removePrefix("http://"),
+                        style = TextStyle(
+                            fontSize = 12.sp,
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Black,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            letterSpacing = 1.sp
+                        )
+                    )
+                }
+                Spacer(Modifier.height(16.dp))
             }
-            Spacer(Modifier.height(8.dp))
             Text(
                 text = if (isConnected) {
                     stringResource(R.string.welcome_to_nabda)
@@ -287,19 +333,15 @@ fun MetricsScreen(
                     color = MaterialTheme.colorScheme.onBackground,
                 )
             )
-        }
-
-        MetricSection(title = stringResource(R.string.permissions_and_security)) {
-            MetricListItem(
-                label = stringResource(R.string.notifications),
-                text = if (notifGranted) stringResource(R.string.notifications_are_enabled) else stringResource(R.string.notifications_are_disabled),
-                fontSize = 28.sp
-            )
-
-            MetricListItem(
-                label = stringResource(R.string.alert_profile),
-                text = if (!isSilent) stringResource(R.string.phone_is_not_silent) else stringResource(R.string.phone_is_silent),
-                fontSize = 28.sp
+            Spacer(Modifier.height(8.dp))
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Justify,
+                text = stringResource(R.string.welcome_subtitle),
+                style = MaterialTheme.typography.titleMedium.copy(
+                    color = MaterialTheme.colorScheme.secondary,
+                    fontWeight = FontWeight.Medium,
+                )
             )
         }
 
@@ -342,7 +384,21 @@ fun MetricsScreen(
             MetricListItem(
                 text = telemetryState?.locationLabel ?: stringResource(R.string.location_unavailable),
                 icon = Icons.Default.LocationOn,
-                fontSize = 28.sp
+                fontSize = 22.sp
+            )
+        }
+
+        MetricSection(title = stringResource(R.string.permissions_and_security)) {
+            MetricListItem(
+                label = stringResource(R.string.notifications),
+                text = if (notifGranted) stringResource(R.string.notifications_are_enabled) else stringResource(R.string.notifications_are_disabled),
+                fontSize = 20.sp
+            )
+
+            MetricListItem(
+                label = stringResource(R.string.alert_profile),
+                text = if (!isSilent) stringResource(R.string.phone_is_not_silent) else stringResource(R.string.phone_is_silent),
+                fontSize = 20.sp
             )
         }
     }
@@ -394,7 +450,7 @@ fun MetricListItem(
                 style = MaterialTheme.typography.titleSmall.copy(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TargetGray,
+                    color = MaterialTheme.colorScheme.tertiary,
                     letterSpacing = 1.sp
                 )
             )
@@ -407,17 +463,18 @@ fun MetricListItem(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onBackground,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
                 )
             }
             Text(
                 text = text,
+                textAlign = TextAlign.Start,
                 modifier = Modifier.fillMaxWidth(),
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontSize = fontSize,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground,
+                    color = MaterialTheme.colorScheme.primary,
                     lineHeight = fontSize
                 )
             )
@@ -435,6 +492,7 @@ fun ActionsScreenContent(
     Column(
         modifier = modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp)
     ) {
         Spacer(modifier = Modifier.height(24.dp))
@@ -549,7 +607,7 @@ fun CaregiverDashboardPreview() {
                 signalStrength = 4,
                 isSilentMode = false
             ),
-            connectedHost = "192.168.1.6",
+            connectedHost = "192.168.1.254:2001",
             alerts = emptyList(),
             selectedFilter = null,
             onFilterSelected = {},
@@ -558,9 +616,8 @@ fun CaregiverDashboardPreview() {
     }
 }
 
-//@Preview(locale = "ar")
 @Composable
-@PreviewLightDark
+@Preview(locale = "ar")
 fun MetricsScreenPreview() {
     NabdaTheme {
         Scaffold {
@@ -569,7 +626,7 @@ fun MetricsScreenPreview() {
                     isConnected = true,
                     notifGranted = true,
                     isSilent = false,
-                    connectedHost = "192.168.1.6",
+                    connectedHost = null,
                     telemetryState = DeviceTelemetryUiState(
                         deviceStatus = DeviceStatus.ONLINE,
                         batteryLevel = BatteryLevel.NORMAL,
@@ -590,7 +647,6 @@ fun MetricsScreenPreview() {
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Preview(locale = "ar")
-@PreviewLightDark
 @Composable
 fun ActionsScreenPreview() {
     NabdaTheme {
