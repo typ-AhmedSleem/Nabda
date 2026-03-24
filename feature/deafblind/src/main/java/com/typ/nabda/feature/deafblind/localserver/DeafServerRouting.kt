@@ -6,20 +6,15 @@ import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants.AUTH_HEAD
 import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants.DEMO_AUTH_TOKEN
 import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants.TAG_SERVER
 import com.typ.nabda.infrastructure.localnetwork.model.ActionAckPayload
-import com.typ.nabda.infrastructure.localnetwork.model.ActionPayload
+import com.typ.nabda.infrastructure.localnetwork.model.CaregiverActionPayload
 import io.ktor.http.HttpStatusCode
-import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.createRouteScopedPlugin
-import io.ktor.server.application.install
-import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
-import kotlinx.serialization.json.Json
 
 /**
  * Simple route-scoped plugin that validates a static demo bearer token.
@@ -41,26 +36,8 @@ private val DemoAuthPlugin = createRouteScopedPlugin("DemoAuth") {
 fun Application.configureDeafServer(
     telemetryCollector: TelemetryCollector,
     deviceId: String,
-    onActionReceived: (ActionPayload) -> ActionAckPayload,
+    onActionReceived: (CaregiverActionPayload) -> ActionAckPayload,
 ) {
-    install(ContentNegotiation) {
-        json(Json {
-            prettyPrint = false
-            isLenient = false
-            ignoreUnknownKeys = true
-        })
-    }
-
-    install(StatusPages) {
-        exception<Throwable> { call, cause ->
-            Log.e(TAG_SERVER, "Unhandled server error", cause)
-            call.respond(
-                HttpStatusCode.InternalServerError,
-                mapOf("error" to (cause.message ?: "Internal Server Error"))
-            )
-        }
-    }
-
     routing {
         install(DemoAuthPlugin)
 
@@ -81,7 +58,7 @@ fun Application.configureDeafServer(
         post("/action") {
             Log.d(TAG_SERVER, "Received /action request")
             try {
-                val actionPayload = call.receive<ActionPayload>()
+                val actionPayload = call.receive<CaregiverActionPayload>()
                 val ack = onActionReceived(actionPayload)
                 call.respond(ack)
             } catch (e: Exception) {

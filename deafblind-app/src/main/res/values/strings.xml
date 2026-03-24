@@ -5,4 +5,14 @@
     <string name="select_interface_to_begin">Select a role to begin</string>
     <string name="i_am_a_deaf_user">I am a\nDeaf User</string>
     <string name="i_am_a_caregiver">I am a\nCaregiver</string>
+
+    <!-- Server Service -->
+    <string name="server_notification_channel_name">Nabda Server Status</string>
+    <string name="server_status_running">Nabda Server: RUNNING</string>
+    <string name="server_status_stopped">Nabda Server: STOPPED</string>
+    <string name="server_offline">Server is currently offline</string>
+    <string name="server_waiting_for_clients">Waiting for clients...</string>
+    <string name="server_clients_connected">%d client(s) connected</string>
+    <string name="action_stop_server">Stop Server</string>
+    <string name="action_start_server">Start Server</string>
 </resources>

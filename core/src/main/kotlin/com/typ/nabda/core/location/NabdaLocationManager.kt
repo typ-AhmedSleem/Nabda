@@ -17,7 +17,6 @@ import com.typ.nabda.core.model.LocationSnapshot
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.Locale
 import kotlin.coroutines.resume
-import android.location.Location as AndroidLocation
 
 class NabdaLocationManager(private val context: Context) {
 
@@ -25,7 +24,11 @@ class NabdaLocationManager(private val context: Context) {
     private val locationSettings = LocationServices.getSettingsClient(context)
     private val locationManager = LocationServices.getFusedLocationProviderClient(context)
 
-    private var lastKnownLocation: AndroidLocation? = null
+    private var lastKnownLocation: LocationSnapshot? = LocationSnapshot(
+        latitude = 30.0444,
+        longitude = 31.2357,
+        accuracyMeters = 50f
+    )
     private var lastKnownLocationRetrieveTime = 0L
 
     @SuppressLint("MissingPermission")
@@ -45,24 +48,37 @@ class NabdaLocationManager(private val context: Context) {
                     .checkLocationSettings(locationSettingsRequest)
                     .addOnSuccessListener {
                         val currentLocationRequest = CurrentLocationRequest.Builder()
-                            .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                            .setPriority(Priority.PRIORITY_BALANCED_POWER_ACCURACY)
                             .build()
 
                         locationManager
                             .getCurrentLocation(currentLocationRequest, cts.token)
                             .addOnSuccessListener { location ->
                                 if (location != null) {
-                                    Log.d("Nabda_LocationManager", "Retrieved current location from system.")
-                                    lastKnownLocation = location
+                                    val locationSnapshot = LocationSnapshot(
+                                        latitude = location.latitude,
+                                        longitude = location.longitude,
+                                        accuracyMeters = location.accuracy
+                                    )
+                                    lastKnownLocation = locationSnapshot
                                     lastKnownLocationRetrieveTime = System.currentTimeMillis()
                                     continuation.resume(
-                                        LocationSnapshot(
-                                            latitude = location.latitude,
-                                            longitude = location.longitude,
-                                            accuracyMeters = location.accuracy
-                                        )
+                                        locationSnapshot
+                                            .also {
+                                                Log.d("Nabda_LocationManager", "Retrieved current location from system. Result='$it'.")
+                                            }
                                     )
                                 } else {
+                                    val cachedLocation = lastKnownLocation
+                                    if (cachedLocation != null) {
+                                        continuation.resume(
+                                            cachedLocation
+                                                .also {
+                                                    Log.d("Nabda_LocationManager", "Retrieved last known cached location. Result='$it'.")
+                                                }
+                                        )
+                                        return@addOnSuccessListener
+                                    }
                                     Log.w("Nabda_LocationManager", "Current location is null.")
                                     continuation.resume(null)
                                 }

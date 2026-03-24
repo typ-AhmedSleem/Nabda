@@ -1,10 +1,14 @@
 package com.typ.nabda.feature.caregiver
 
-import androidx.compose.foundation.BorderStroke
+import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,67 +17,71 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.VolumeOff
-import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.BatteryAlert
+import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.BatteryStd
-import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Dashboard
+import androidx.compose.material.icons.filled.FlashOn
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.SettingsInputAntenna
 import androidx.compose.material.icons.filled.SignalCellularAlt
 import androidx.compose.material.icons.filled.Wifi
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.fastForEach
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.typ.nabda.core.model.Alert
+import com.typ.nabda.core.model.CaregiverAction
 import com.typ.nabda.core.model.ConnectivitySource
-import com.typ.nabda.core.model.SupportedAction
 import com.typ.nabda.designsystem.theme.NabdaTheme
+import com.typ.nabda.feature.caregiver.actions.CaregiverQuickActions
+import com.typ.nabda.feature.caregiver.models.QuickActionItem
 import org.koin.compose.viewmodel.koinViewModel
-import org.ocpsoft.prettytime.PrettyTime
-import java.util.Date
 
-// Target Design Colors
+enum class CaregiverTab {
+    METRICS, ACTIONS, HISTORY
+}
+
 private val DarkBlue = Color(0xFF326680)
 private val LabelGray = Color(0xff858383)
-private val GreenText = Color(0xFF4CAF50)
-private val PillGreenBg = Color(0xFFE8F5E9)
-private val PillGreenText = Color(0xFF4CAF50)
+private val BackgroundColor = Color(0xFFFDFBF0)
+private val TargetBlack = Color(0xFF1C1C1C)
+private val TargetGreen = Color(0xFF66BB6A)
+private val TargetGray = Color(0xFFAAAAAA)
 private val PillBlueBg = Color(0xFFE3F2FD)
-private val PillBlueText = Color(0xFF2196F3)
-private val PillGrayBg = Color(0xFFF5F5F5)
-private val PillGrayText = Color(0xFF9E9E9E)
-private val BackgroundColor = Color(0xFFF8F9FB)
-private val IconCircleColor = Color(0xFFF5E1D1)
-private val IconColor = Color(0xFFDA7A5E)
 
 @Composable
 fun CaregiverScreen(
@@ -81,10 +89,14 @@ fun CaregiverScreen(
     onNavigateToDiscovery: () -> Unit = {},
 ) {
     val isSilent by viewModel.isPhoneSilent.collectAsStateWithLifecycle()
+    val connectedHost by viewModel.connectedHost.collectAsStateWithLifecycle()
     val isConnected by viewModel.isInternetConnected.collectAsStateWithLifecycle()
     val notifGranted by viewModel.isNotificationPermissionGranted.collectAsStateWithLifecycle()
     val telemetryState by viewModel.telemetryUiState.collectAsStateWithLifecycle()
-    // Navigation logic
+    var selectedTab by remember { mutableStateOf(CaregiverTab.METRICS) }
+    val alerts by viewModel.filteredAlerts.collectAsStateWithLifecycle()
+    val selectedFilter by viewModel.selectedFilter.collectAsStateWithLifecycle()
+
     LaunchedEffect(Unit) {
         viewModel.navigationEvents.collect { event ->
             when (event) {
@@ -96,384 +108,494 @@ fun CaregiverScreen(
     }
 
     CaregiverDashboardContent(
+        selectedTab = selectedTab,
+        onTabSelected = { selectedTab = it },
+        connectedHost = connectedHost,
         isConnected = isConnected,
         notifGranted = notifGranted,
         isSilent = isSilent,
         telemetryState = telemetryState,
+        alerts = alerts,
+        selectedFilter = selectedFilter,
+        onFilterSelected = viewModel::onFilterSelected,
         onActionClick = viewModel::sendAction
     )
-}
-
-// ... helper to format relative time
-@Composable
-fun formatRelativeTime(timestamp: Long): String {
-    val prettyTime = remember { PrettyTime() }
-    return prettyTime.format(Date(timestamp))
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CaregiverDashboardContent(
     modifier: Modifier = Modifier,
+    selectedTab: CaregiverTab,
+    onTabSelected: (CaregiverTab) -> Unit,
     isConnected: Boolean,
     notifGranted: Boolean,
     isSilent: Boolean,
+    connectedHost: String?,
     telemetryState: DeviceTelemetryUiState?,
-    onActionClick: (SupportedAction) -> Unit,
+    alerts: List<Alert>,
+    selectedFilter: CaregiverAction?,
+    onFilterSelected: (CaregiverAction?) -> Unit,
+    onActionClick: (CaregiverAction) -> Unit,
 ) {
     Scaffold(
-        containerColor = BackgroundColor,
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.nabda_caregiver),
-                        maxLines = 1
-                    )
-                }
+        modifier = modifier,
+//        containerColor = BackgroundColor,
+        bottomBar = {
+            CaregiverBottomNavigation(
+                selectedTab = selectedTab,
+                onTabSelected = onTabSelected
             )
         }
     ) { innerPadding ->
-        Column(
-            modifier = modifier
+        AnimatedContent(
+            modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(innerPadding)
-                .padding(horizontal = 20.dp, vertical = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
-            // System Active Card
-            SystemActiveCard(isConnected, telemetryState?.deviceStatus ?: DeviceStatus.OFFLINE)
-
-            // Header Section
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.paired_device_metrics),
-                    style = TextStyle(
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = LabelGray
+                .padding(innerPadding),
+            targetState = selectedTab,
+            label = "TabAnimation"
+        ) { caregiverTab ->
+            when (caregiverTab) {
+                CaregiverTab.METRICS -> {
+                    MetricsScreen(
+                        isConnected = isConnected,
+                        notifGranted = notifGranted,
+                        isSilent = isSilent,
+                        telemetryState = telemetryState,
+                        connectedHost = connectedHost
                     )
-                )
-                StatusBadge(text = if (telemetryState != null) formatRelativeTime(telemetryState.rawTimestamp) else stringResource(R.string.offline))
-            }
-
-            val isCharging = telemetryState?.isCharging == true
-            MetricGridCard(
-                modifier = Modifier.fillMaxWidth(),
-                icon = Icons.Default.BatteryStd,
-                topLabel = if (isCharging) stringResource(R.string.charging) else stringResource(R.string.discharging),
-                topLabelColor = if (isCharging) PillGreenText else Color.Red,
-                topLabelBg = if (isCharging) PillGreenBg else Color(0xFFFFEBEE),
-                value = "${telemetryState?.batteryPercentage ?: 0}%",
-                bottomLabel = stringResource(R.string.battery_life),
-                valueSize = 34.sp
-            )
-
-            // Row 2: Signal & Location
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                val signalBars = (telemetryState?.signalStrength ?: 0)
-                val signalLabel = when (signalBars) {
-                    4 -> stringResource(R.string.excellent)
-                    3 -> stringResource(R.string.good)
-                    2 -> stringResource(R.string.fair)
-                    1 -> stringResource(R.string.poor)
-                    else -> stringResource(R.string.none)
                 }
 
-                MetricGridCard(
-                    modifier = Modifier.weight(1f),
-                    icon = if (telemetryState?.connectivity == ConnectivitySource.WIFI) Icons.Default.Wifi else Icons.Default.SignalCellularAlt,
-//                    topLabel = stringResource(R.string.stable),
-                    topLabelColor = PillBlueText,
-                    topLabelBg = PillBlueBg,
-                    value = telemetryState?.connectivity?.name ?: stringResource(R.string.none),
-                    bottomLabel = stringResource(R.string.network_source),
-                    valueSize = 34.sp
-                )
+                CaregiverTab.ACTIONS -> {
+                    ActionsScreenContent(
+                        onActionClick = onActionClick
+                    )
+                }
 
-                MetricGridCard(
-                    modifier = Modifier.weight(1f),
-                    icon = Icons.Default.SignalCellularAlt,
-//                    topLabel = stringResource(R.string.bars_format, signalBars),
-                    topLabelColor = IconColor,
-                    topLabelBg = IconCircleColor,
-                    value = signalLabel,
-                    bottomLabel = stringResource(R.string.signal_strength),
-                    valueSize = 26.sp
-                )
+                CaregiverTab.HISTORY -> {
+                    CaregiverHistoryContent(
+                        alerts = alerts,
+                        selectedFilter = selectedFilter,
+                        onFilterSelected = onFilterSelected
+                    )
+                }
             }
-
-            MetricGridCard(
-                icon = Icons.Default.LocationOn,
-                modifier = Modifier.fillMaxWidth(),
-//                    topIcon = Icons.AutoMirrored.Filled.OpenInNew,
-                value = telemetryState?.locationLabel ?: stringResource(R.string.unknown),
-                topLabelColor = DarkBlue,
-                topLabel = if (telemetryState != null) formatRelativeTime(telemetryState.rawTimestamp) else stringResource(R.string.offline),
-                topLabelBg = DarkBlue.copy(0.1f),
-                bottomLabel = stringResource(R.string.location),
-                valueSize = 24.sp
-            )
-
-            // Row 3: Notifications & Silent Mode
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                MetricGridCard(
-                    modifier = Modifier.weight(1f),
-                    icon = Icons.Default.Notifications,
-                    topIcon = Icons.Default.CheckCircle,
-                    topLabelColor = if (notifGranted) GreenText else {
-                        MaterialTheme.colorScheme.error
-                    },
-                    value = if (notifGranted) stringResource(R.string.allowed) else stringResource(R.string.denied),
-                    bottomLabel = stringResource(R.string.notifications),
-                    valueSize = 24.sp
-                )
-                val isDeafSilent = telemetryState?.isSilentMode == true
-                MetricGridCard(
-                    modifier = Modifier.weight(1f),
-                    icon = if (isDeafSilent) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
-                    topIcon = Icons.Default.CheckCircle.takeUnless { isDeafSilent },
-                    topLabelColor = if (isDeafSilent) {
-                        MaterialTheme.colorScheme.error
-                    } else {
-                        GreenText
-                    },
-                    value = if (isDeafSilent) stringResource(R.string.silent) else stringResource(R.string.normal),
-                    bottomLabel = stringResource(R.string.deaf_device_mode),
-                    valueSize = 24.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
 
 @Composable
-fun SystemActiveCard(isConnected: Boolean, localStatus: DeviceStatus) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(50),
-        colors = CardDefaults.cardColors(containerColor = DarkBlue),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+fun CaregiverBottomNavigation(
+    modifier: Modifier = Modifier,
+    selectedTab: CaregiverTab,
+    onTabSelected: (CaregiverTab) -> Unit,
+) {
+    NavigationBar(
+        modifier = modifier,
+        containerColor = Color.White,
+        contentColor = DarkBlue,
+        tonalElevation = 8.dp
     ) {
-        Row(
-            modifier = Modifier
-                .padding(
-                    horizontal = 8.dp,
-                    vertical = 8.dp
-                )
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier.size(60.dp),
-                contentAlignment = Alignment.Center
+        NavigationBarItem(
+            selected = selectedTab == CaregiverTab.METRICS,
+            onClick = { onTabSelected(CaregiverTab.METRICS) },
+            icon = { Icon(Icons.Default.Dashboard, contentDescription = null) },
+            label = { Text(stringResource(R.string.tab_metrics)) },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = DarkBlue,
+                selectedTextColor = DarkBlue,
+                unselectedIconColor = LabelGray,
+                unselectedTextColor = LabelGray,
+                indicatorColor = PillBlueBg
+            )
+        )
+        NavigationBarItem(
+            selected = selectedTab == CaregiverTab.ACTIONS,
+            onClick = { onTabSelected(CaregiverTab.ACTIONS) },
+            icon = { Icon(Icons.Default.FlashOn, contentDescription = null) },
+            label = { Text(stringResource(R.string.tab_actions)) },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = DarkBlue,
+                selectedTextColor = DarkBlue,
+                unselectedIconColor = LabelGray,
+                unselectedTextColor = LabelGray,
+                indicatorColor = PillBlueBg
+            )
+        )
+        NavigationBarItem(
+            selected = selectedTab == CaregiverTab.HISTORY,
+            onClick = { onTabSelected(CaregiverTab.HISTORY) },
+            icon = { Icon(Icons.Default.History, contentDescription = null) },
+            label = { Text(stringResource(R.string.tab_history)) },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = DarkBlue,
+                selectedTextColor = DarkBlue,
+                unselectedIconColor = LabelGray,
+                unselectedTextColor = LabelGray,
+                indicatorColor = PillBlueBg
+            )
+        )
+    }
+}
+
+@Composable
+fun MetricsScreen(
+    modifier: Modifier = Modifier,
+    isConnected: Boolean,
+    notifGranted: Boolean,
+    isSilent: Boolean,
+    connectedHost: String?,
+    telemetryState: DeviceTelemetryUiState?,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp, vertical = 48.dp),
+        verticalArrangement = Arrangement.spacedBy(40.dp)
+    ) {
+        Column {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Box(
                     modifier = Modifier
-                        .size(60.dp)
-                        .background(Color.White, CircleShape)
+                        .size(8.dp)
+                        .background(TargetGreen, CircleShape)
                 )
-                Icon(
-                    imageVector = Icons.Default.SettingsInputAntenna,
-                    contentDescription = null,
-                    tint = DarkBlue,
-                    modifier = Modifier.size(30.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = if (localStatus == DeviceStatus.ONLINE || isConnected) stringResource(R.string.system_active) else stringResource(R.string.system_offline),
+                    text = connectedHost?.removePrefix("http://") ?: stringResource(R.string.connected_to_nabda_device),
                     style = TextStyle(
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Black,
-                        color = Color.White
+                        fontSize = 12.sp,
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = TargetGreen,
+                        letterSpacing = 1.sp
                     )
                 )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(5.dp)
-                            .background(Color.White.copy(alpha = 0.5f), CircleShape)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = stringResource(R.string.connected_to_nabda_device),
-                        style = TextStyle(
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White.copy(alpha = 0.75f)
-                        )
-                    )
-                }
             }
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = if (isConnected) {
+                    stringResource(R.string.welcome_to_nabda)
+                } else {
+                    stringResource(R.string.system_offline)
+                },
+                style = MaterialTheme.typography.displaySmall.copy(
+                    fontWeight = FontWeight.Black,
+                    color = MaterialTheme.colorScheme.onBackground,
+                )
+            )
+        }
+
+        MetricSection(title = stringResource(R.string.permissions_and_security)) {
+            MetricListItem(
+                label = stringResource(R.string.notifications),
+                text = if (notifGranted) stringResource(R.string.notifications_are_enabled) else stringResource(R.string.notifications_are_disabled),
+                fontSize = 28.sp
+            )
+
+            MetricListItem(
+                label = stringResource(R.string.alert_profile),
+                text = if (!isSilent) stringResource(R.string.phone_is_not_silent) else stringResource(R.string.phone_is_silent),
+                fontSize = 28.sp
+            )
+        }
+
+        MetricSection(title = stringResource(R.string.device_metrics)) {
+            MetricListItem(
+                label = stringResource(R.string.power_level),
+                text = stringResource(R.string.battery_percentage_format, telemetryState?.batteryPercentage ?: 0),
+                icon = Icons.Default.BatteryStd,
+                fontSize = 20.sp
+            )
+            MetricListItem(
+                label = stringResource(R.string.power_source),
+                text = if (telemetryState?.isCharging == true) stringResource(R.string.device_is_charging) else stringResource(R.string.device_is_discharging),
+                icon = if (telemetryState?.isCharging == true) Icons.Default.BatteryChargingFull else Icons.Default.BatteryAlert,
+                fontSize = 20.sp
+            )
+            MetricListItem(
+                label = stringResource(R.string.infrastructure),
+                text = stringResource(R.string.connected_to_wifi),
+                icon = Icons.Default.Wifi,
+                fontSize = 20.sp
+            )
+            val signalBars = telemetryState?.signalStrength ?: 0
+            val signalLabel = when (signalBars) {
+                4 -> stringResource(R.string.excellent)
+                3 -> stringResource(R.string.good)
+                2 -> stringResource(R.string.fair)
+                1 -> stringResource(R.string.poor)
+                else -> stringResource(R.string.none)
+            }
+            MetricListItem(
+                label = stringResource(R.string.data_strength),
+                text = stringResource(R.string.signal_strength_format, signalLabel),
+                icon = Icons.Default.SignalCellularAlt,
+                fontSize = 20.sp
+            )
+        }
+
+        MetricSection(title = stringResource(R.string.geofence_position)) {
+            MetricListItem(
+                text = telemetryState?.locationLabel ?: stringResource(R.string.location_unavailable),
+                icon = Icons.Default.LocationOn,
+                fontSize = 28.sp
+            )
         }
     }
 }
 
 @Composable
-fun MetricGridCard(
+fun MetricSection(
+    title: String,
     modifier: Modifier = Modifier,
-    icon: ImageVector,
-    topLabel: String = "",
-    topLabelColor: Color = GreenText,
-    topLabelBg: Color = Color.Transparent,
-    topIcon: ImageVector? = null,
-    topIconColor: Color = LabelGray,
-    value: String,
-    bottomLabel: String,
-    valueSize: TextUnit = 24.sp,
-    containerColor: Color = Color.White,
-    contentColor: Color = Color.Black,
+    content: @Composable (ColumnScope.() -> Unit) = {},
 ) {
-    Card(
-        modifier = modifier.heightIn(min = 120.dp),
-        shape = RoundedCornerShape(25),
-        colors = CardDefaults.cardColors(
-            containerColor = containerColor,
-            contentColor = contentColor
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        border = BorderStroke(
-            1.dp,
-            LabelGray.copy(0.25f)
-        ),
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 16.dp)
-                .padding(
-                    top = 16.dp,
-                    bottom = 12.dp
-                ),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = title.uppercase(),
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onBackground.copy(0.65f),
+                letterSpacing = 1.sp
+            )
+        )
+        HorizontalDivider(thickness = 1.dp)
+        content()
+    }
+}
+
+@Composable
+fun MetricListItem(
+    text: String,
+    modifier: Modifier = Modifier,
+    label: String? = null,
+    icon: ImageVector? = null,
+    fontSize: TextUnit = 28.sp,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        if (label != null) {
+            Text(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                /*Icon(
+                text = label.uppercase(),
+                style = MaterialTheme.typography.titleSmall.copy(
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TargetGray,
+                    letterSpacing = 1.sp
+                )
+            )
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            if (icon != null) {
+                Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = DarkBlue,
+                    tint = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.size(24.dp)
-                )*/
-
-                Text(
-                    text = bottomLabel,
-                    style = TextStyle(
-                        fontSize = 10.sp,
-                        color = LabelGray,
-                        fontWeight = FontWeight.Medium
-                    )
                 )
             }
-
-            Spacer(Modifier.height(8.dp))
-
-            Column {
-                Text(
-                    text = value,
-                    style = TextStyle(
-                        fontSize = valueSize,
-                        fontWeight = FontWeight.Black,
-                        color = topLabelColor
-                    ),
-                    autoSize = TextAutoSize.StepBased(
-                        maxFontSize = valueSize,
-                    ),
-                    maxLines = 1,
-                    modifier = Modifier.fillMaxWidth(),
+            Text(
+                text = text,
+                modifier = Modifier.fillMaxWidth(),
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontSize = fontSize,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    lineHeight = fontSize
                 )
-                if (topLabel.isNotEmpty()) {
-                    Spacer(Modifier.height(4.dp))
-                    Surface(
-                        color = topLabelBg,
-                        shape = CircleShape
-                    ) {
-                        Text(
-                            text = topLabel,
-                            modifier = Modifier
-                                .padding(horizontal = 8.dp, vertical = 2.dp),
-                            style = TextStyle(
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Black,
-                                color = topLabelColor
-                            )
-                        )
-                    }
-                }
+            )
+        }
+    }
+}
+
+@Composable
+fun ActionsScreenContent(
+    modifier: Modifier = Modifier,
+    onActionClick: (CaregiverAction) -> Unit,
+) {
+    val actions = remember { CaregiverQuickActions.allActions }
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp)
+    ) {
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = stringResource(R.string.quick_actions_title),
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = stringResource(R.string.quick_actions_subtitle),
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.inverseSurface
+            )
+        )
+        Spacer(modifier = Modifier.height(32.dp))
+
+        FlowRow(
+            modifier = Modifier.fillMaxSize(),
+            itemVerticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(
+                alignment = Alignment.CenterHorizontally,
+                space = 16.dp,
+            ),
+            maxItemsInEachRow = 2,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            actions.fastForEach { item ->
+                QuickActionCard(
+                    item = item,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onActionClick(item.action) }
+                )
             }
         }
     }
 }
 
 @Composable
-fun StatusBadge(text: String) {
-    Row(
-        modifier = Modifier
-            .background(Color(0xFFE3F2FD), CircleShape)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
+fun QuickActionCard(
+    item: QuickActionItem,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    Column(
+        modifier = modifier
+            .heightIn(min = 164.dp)
+            .clip(RoundedCornerShape(25))
+            .background(item.iconBg)
+            .clickable(onClick = onClick)
+            .padding(
+                horizontal = 16.dp,
+                vertical = 16.dp
+            ),
+        verticalArrangement = Arrangement.SpaceEvenly
     ) {
         Box(
             modifier = Modifier
-                .size(6.dp)
-                .background(DarkBlue, CircleShape)
-        )
+                .size(60.dp)
+                .align(Alignment.CenterHorizontally)
+                .clip(RoundedCornerShape(40))
+                .background(item.iconColor),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = item.icon,
+                contentDescription = null,
+                tint = item.iconBg,
+                modifier = Modifier.size(28.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = text,
-            style = TextStyle(
-                fontSize = 10.sp,
+            textAlign = TextAlign.Center,
+            text = stringResource(item.titleResId),
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = DarkBlue
+                color = item.iconColor
             )
         )
     }
 }
 
-@Preview
+@Preview(locale = "ar")
 @Composable
 fun CaregiverDashboardPreview() {
+    var selectedTab by remember { mutableStateOf(CaregiverTab.METRICS) }
+
     NabdaTheme {
         CaregiverDashboardContent(
+            selectedTab = selectedTab,
+            onTabSelected = { selectedTab = it },
             isConnected = true,
-            notifGranted = false,
-            isSilent = true,
+            notifGranted = true,
+            isSilent = false,
             telemetryState = DeviceTelemetryUiState(
-                deviceStatus = DeviceStatus.OFFLINE,
-                batteryLevel = BatteryLevel.CRITICAL,
-                batteryPercentage = 87,
+                deviceStatus = DeviceStatus.ONLINE,
+                batteryLevel = BatteryLevel.NORMAL,
+                batteryPercentage = 84,
                 isCharging = true,
                 connectivity = ConnectivitySource.WIFI,
-                locationLabel = "Zagazig, Egypt",
+                locationLabel = "الزقازيق، مصر",
                 lastSeenLabel = "Last seen label",
                 rawTimestamp = System.currentTimeMillis(),
-                signalStrength = 3,
-                isSilentMode = true
+                signalStrength = 4,
+                isSilentMode = false
             ),
-            onActionClick = {}
+            connectedHost = "192.168.1.6",
+            alerts = emptyList(),
+            selectedFilter = null,
+            onFilterSelected = {},
+            onActionClick = {},
         )
+    }
+}
+
+//@Preview(locale = "ar")
+@Composable
+@PreviewLightDark
+fun MetricsScreenPreview() {
+    NabdaTheme {
+        Scaffold {
+            Box(Modifier.padding(it)) {
+                MetricsScreen(
+                    isConnected = true,
+                    notifGranted = true,
+                    isSilent = false,
+                    connectedHost = "192.168.1.6",
+                    telemetryState = DeviceTelemetryUiState(
+                        deviceStatus = DeviceStatus.ONLINE,
+                        batteryLevel = BatteryLevel.NORMAL,
+                        batteryPercentage = 84,
+                        isCharging = true,
+                        connectivity = ConnectivitySource.WIFI,
+                        locationLabel = "الزقازيق، مصر",
+                        lastSeenLabel = "Last seen label",
+                        rawTimestamp = System.currentTimeMillis(),
+                        signalStrength = 4,
+                        isSilentMode = false
+                    ),
+                )
+            }
+        }
+    }
+}
+
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@Preview(locale = "ar")
+@PreviewLightDark
+@Composable
+fun ActionsScreenPreview() {
+    NabdaTheme {
+        Scaffold {
+            ActionsScreenContent(onActionClick = {})
+        }
     }
 }

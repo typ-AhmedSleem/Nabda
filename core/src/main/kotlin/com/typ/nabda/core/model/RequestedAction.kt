@@ -9,7 +9,7 @@ enum class ActionPriority {
 }
 
 @Serializable
-data class Action(
+data class RequestedAction(
     val id: String,
     val name: String,
     val description: String,

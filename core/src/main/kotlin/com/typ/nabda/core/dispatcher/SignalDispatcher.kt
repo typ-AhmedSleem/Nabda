@@ -1,17 +1,13 @@
 package com.typ.nabda.core.dispatcher
 
 import com.typ.nabda.core.common.NabdaResult
-import com.typ.nabda.core.messaging.MessageSender
-import com.typ.nabda.core.messaging.TokenRepository
-import com.typ.nabda.core.model.Action
-import com.typ.nabda.core.pairing.PairingRepository
-import kotlinx.coroutines.flow.firstOrNull
+import com.typ.nabda.core.model.RequestedAction
 
 interface SignalDispatcher {
-    suspend fun dispatchAction(action: Action): NabdaResult<Unit>
+    suspend fun dispatchAction(requestedAction: RequestedAction): NabdaResult<Unit>
 }
 
-class SignalDispatcherImpl(
+/*class SignalDispatcherImpl(
     private val pairingRepository: PairingRepository,
     private val tokenRepository: TokenRepository,
     private val messageSender: MessageSender,
@@ -30,4 +26,4 @@ class SignalDispatcherImpl(
         // 3. Send
         return messageSender.sendAction(token, action)
     }
-}
+}*/

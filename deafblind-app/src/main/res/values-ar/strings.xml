@@ -6,4 +6,14 @@
     <string name="select_interface_to_begin">اختار دورك عشان تبدأ</string>
     <string name="i_am_a_deaf_user">أنا مستخدم\nأصم كفيف</string>
     <string name="i_am_a_caregiver">أنا\nمرافق</string>
+
+    <!-- Server Service -->
+    <string name="server_notification_channel_name">حالة خادم نبضة</string>
+    <string name="server_status_running">خادم نبضة: يعمل</string>
+    <string name="server_status_stopped">خادم نبضة: متوقف</string>
+    <string name="server_offline">الخادم غير متصل حالياً</string>
+    <string name="server_waiting_for_clients">في انتظار الأجهزة...</string>
+    <string name="server_clients_connected">تم اتصال %d جهاز</string>
+    <string name="action_stop_server">إيقاف الخادم</string>
+    <string name="action_start_server">بدء الخادم</string>
 </resources>

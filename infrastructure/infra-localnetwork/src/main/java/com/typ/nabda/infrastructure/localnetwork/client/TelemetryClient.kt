@@ -1,9 +1,14 @@
 package com.typ.nabda.infrastructure.localnetwork.client
 
+import android.util.Log
 import com.typ.nabda.core.model.TelemetryHeartbeatPayload
+import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants.CONNECT_TIMEOUT_MS
+import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants.READ_TIMEOUT_MS
+import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants.TAG_CLIENT
 import com.typ.nabda.infrastructure.localnetwork.model.ActionPayload
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
 import io.ktor.client.plugins.websocket.WebSockets
@@ -44,6 +49,11 @@ class TelemetryClient(
                 ignoreUnknownKeys = true
             })
         }
+        install(HttpTimeout) {
+            connectTimeoutMillis = CONNECT_TIMEOUT_MS
+            requestTimeoutMillis = READ_TIMEOUT_MS
+            socketTimeoutMillis = READ_TIMEOUT_MS
+        }
     }
 
     private val _events = MutableSharedFlow<Any>(extraBufferCapacity = 10)
@@ -62,9 +72,15 @@ class TelemetryClient(
         connectionJob = scope.launch {
             while (isActive) {
                 try {
+                    Log.d(TAG_CLIENT, "Establishing WebSocket connection to $host:$port...")
+                    LocalClientRegistry.updateStatus(if (_isConnected.value) ConnectionStatus.RECONNECTING else ConnectionStatus.CONNECTING)
+                    
                     client.webSocket(host = host, port = port, path = "/ws/events") {
                         session = this
                         _isConnected.value = true
+                        LocalClientRegistry.updateStatus(ConnectionStatus.CONNECTED)
+                        Log.i(TAG_CLIENT, "WebSocket connected to $host:$port")
+                        
                         for (frame in incoming) {
                             if (frame is Frame.Text) {
                                 val text = frame.readText()
@@ -73,10 +89,12 @@ class TelemetryClient(
                         }
                     }
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    Log.w(TAG_CLIENT, "WebSocket connection failed: ${e.message}. Retrying...")
+                    LocalClientRegistry.updateStatus(ConnectionStatus.DISCONNECTED)
                 } finally {
                     session = null
                     _isConnected.value = false
+                    Log.d(TAG_CLIENT, "WebSocket connection closed")
                 }
                 delay(3000) // Retry every 3 seconds
             }
@@ -103,7 +121,7 @@ class TelemetryClient(
         session?.send(Frame.Text("ACK:$actionId"))
     }
 
-    fun disconnect() {
+    fun stop() {
         scope.cancel()
         client.close()
     }

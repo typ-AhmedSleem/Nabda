@@ -36,8 +36,6 @@ val caregiverFeatureModule = module {
     viewModel {
         CaregiverViewModel(
             notificationManager = get(),
-            telemetryRepository = get(),
-            pairingRepository = get(),
             geocoder = get(),
             discoveryManager = get(),
             heartbeatPoller = get(),

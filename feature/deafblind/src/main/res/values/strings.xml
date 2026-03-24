@@ -7,7 +7,7 @@
     <string name="tap">TAP</string>
     <string name="ready">READY</string>
     <string name="not_connected">NOT CONNECTED</string>
-    <string name="confirm_action_format">CONFIRM: %1$s?</string>
+    <string name="confirm_action_format">CONFIRM:\n %1$s?</string>
     <string name="timed_out">TIMED OUT</string>
     <string name="wrong_gesture">WRONG GESTURE</string>
     <string name="sending">SENDING…</string>

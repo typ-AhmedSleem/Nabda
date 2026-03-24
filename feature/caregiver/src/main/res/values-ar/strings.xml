@@ -4,6 +4,8 @@
     <string name="history">السجل</string>
     <string name="no_history_available">مفيش سجل متاح حالياً</string>
     <string name="paired_device_metrics">حالة الجهاز المتصل</string>
+    <string name="quick_actions">إجراءات سريعة</string>
+    <string name="caregiver_actions">إجراءات المرافق</string>
     <string name="offline">غير متصل</string>
     <string name="just_now">دلوقتي</string>
     <string name="updated_mins_ago">تحديث من %1$d دقيقة</string>
@@ -11,7 +13,7 @@
     <string name="charging">بيشحن</string>
     <string name="discharging">مفيش شاحن</string>
     <string name="battery_life">حالة البطارية</string>
-    <string name="excellent">ممتاز</string>
+    <string name="excellent">ممتازه</string>
     <string name="good">كويس</string>
     <string name="fair">متوسط</string>
     <string name="poor">ضعيف</string>
@@ -24,7 +26,7 @@
     <string name="unknown">مش معروف</string>
     <string name="allowed">مسموح</string>
     <string name="denied">مرفوض</string>
-    <string name="notifications">التنبيهات</string>
+    <string name="notifications">الإشعارات</string>
     <string name="silent">صامت</string>
     <string name="normal">عادي</string>
     <string name="deaf_device_mode">وضع جهاز الأصم</string>
@@ -54,5 +56,56 @@
     <string name="camera_desc">بنستخدمها عشان نمسح الكود ونربط الأجهزة.</string>
     <string name="continue_label">كمل</string>
     <string name="location_unavailable">المكان مش متاح</string>
+    <string name="cant_get_location">مشكله حصلت في تحديد الموقع</string>
     <string name="unknown_location">مكان مش معروف</string>
+    <string name="action_sent">تبعت الإجراء</string>
+    <string name="action_delivered">وصل الإجراء</string>
+    <string name="action_not_sent">الإجراء متبعتش</string>
+
+    <!-- Tabs -->
+    <string name="tab_metrics">الحالة</string>
+    <string name="tab_actions">الإجراءات</string>
+    <string name="tab_history">السجل</string>
+
+    <!-- Quick Actions -->
+    <string name="quick_actions_title">إجراءات سريعة</string>
+    <string name="quick_actions_subtitle">تواصل فوري للحاجات الأساسية.</string>
+    <string name="action_food_ready_title">الأكل جاهز</string>
+    <string name="action_food_ready_desc">عرفهم إن الأكل محطوط ومستني.</string>
+    <string name="action_come_closer_title">تعالى هنا</string>
+    <string name="action_come_closer_desc">اطلب منهم ييجوا جنبك دلوقتي.</string>
+    <string name="action_are_you_sick_title">أنت تعبان؟</string>
+    <string name="action_are_you_sick_desc">اسأل واطمن على حالة المريض فوراً.</string>
+    <string name="action_do_you_want_this_title">عايز دي؟</string>
+    <string name="action_do_you_want_this_desc">اتأكد لو محتاج حاجة أو نشاط معين.</string>
+    <string name="action_sleep_time_title">جه وقت النوم</string>
+    <string name="action_im_coming_title">أنا جاي</string>
+    <string name="action_im_coming_desc">عرفهم إن المساعدة في الطريق.</string>
+
+    <!-- Metrics Screen -->
+    <string name="active_monitoring">مراقبة نشطة</string>
+    <string name="permissions_and_security">الأذونات والأمان</string>
+    <string name="connectivity">الاتصال</string>
+    <string name="notifications_are_enabled">التنبيهات مفعلة</string>
+    <string name="notifications_are_disabled">التنبيهات معطلة</string>
+    <string name="alert_profile">وضع التنبيه</string>
+    <string name="phone_is_not_silent">الموبايل مش صامت</string>
+    <string name="phone_is_silent">الموبايل صامت</string>
+    <string name="device_metrics">حالة الجهاز</string>
+    <string name="power_level">مستوى البطارية</string>
+    <string name="battery_percentage_format">البطارية بنسبة %1$d%%</string>
+    <string name="power_source">مصدر الطاقة</string>
+    <string name="device_is_charging">الجهاز بيشحن</string>
+    <string name="device_is_discharging">الجهاز مش بيشحن</string>
+    <string name="infrastructure">الشبكة</string>
+    <string name="connected_to_wifi">متصل بالواي فاي</string>
+    <string name="data_strength">قوة الإشارة</string>
+    <string name="signal_strength_format">الإشارة %1$s</string>
+    <string name="geofence_position">الموقع الجغرافي</string>
+    <string name="located_in_format">موجود في %1$s</string>
+
+    <string name="checking_permissions">جاري التحقق من الأذونات…</string>
+    <string name="notification_permission_denied">إذن التنبيهات معطل بشكل دائم. يرجى تفعيله من الإعدادات لاستلام التنبيهات الهامة.</string>
+    <string name="open_notification_settings">افتح إعدادات الإشعارات</string>
 </resources>
+

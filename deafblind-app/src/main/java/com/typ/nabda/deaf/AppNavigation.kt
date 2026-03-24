@@ -5,6 +5,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.typ.nabda.feature.deafblind.DeafBlindScreen
+import com.typ.nabda.feature.deafblind.VibratorTestScreen
 import com.typ.nabda.feature.pairing.PairingScreen
 
 @Composable
@@ -32,8 +33,14 @@ fun AppNavigation() {
             )
         }
 
+        composable("test_vibration") {
+            VibratorTestScreen()
+        }
+
         composable("deafblind_dashboard") {
-            DeafBlindScreen()
+            DeafBlindScreen {
+                navController.navigate("test_vibration")
+            }
         }
     }
 }

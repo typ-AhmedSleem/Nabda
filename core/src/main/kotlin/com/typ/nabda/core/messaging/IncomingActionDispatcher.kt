@@ -1,6 +1,6 @@
 package com.typ.nabda.core.messaging
 
-import com.typ.nabda.core.model.Action
+import com.typ.nabda.core.model.RequestedAction
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -11,10 +11,10 @@ import kotlinx.coroutines.flow.asSharedFlow
  * that UI components (like ViewModels) can observe.
  */
 class IncomingActionDispatcher : ActionHandler {
-    private val _actions = MutableSharedFlow<Action>(extraBufferCapacity = 16)
-    val actions: SharedFlow<Action> = _actions.asSharedFlow()
+    private val _actions = MutableSharedFlow<RequestedAction>(extraBufferCapacity = 16)
+    val actions: SharedFlow<RequestedAction> = _actions.asSharedFlow()
 
-    override fun onActionReceived(action: Action) {
-        _actions.tryEmit(action)
+    override fun onActionReceived(requestedAction: RequestedAction) {
+        _actions.tryEmit(requestedAction)
     }
 }

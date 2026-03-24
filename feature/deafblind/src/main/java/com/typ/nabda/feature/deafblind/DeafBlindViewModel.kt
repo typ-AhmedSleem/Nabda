@@ -3,15 +3,15 @@ package com.typ.nabda.feature.deafblind
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.typ.nabda.core.actions.ActionMapper
+import com.typ.nabda.core.actions.RequestedActionMapper
 import com.typ.nabda.core.common.NabdaResult
 import com.typ.nabda.core.dispatcher.SignalDispatcher
 import com.typ.nabda.core.haptic.HapticEngine
 import com.typ.nabda.core.messaging.IncomingActionDispatcher
-import com.typ.nabda.core.model.Action
 import com.typ.nabda.core.model.GestureInput
 import com.typ.nabda.core.model.GestureType
 import com.typ.nabda.core.model.HapticEnginePattern
+import com.typ.nabda.core.model.RequestedAction
 import com.typ.nabda.designsystem.UiText
 import com.typ.nabda.infrastructure.localnetwork.server.LocalServerRegistry
 import kotlinx.coroutines.Job
@@ -38,16 +38,14 @@ class DeafBlindViewModel(
     private val _uiState = MutableStateFlow(DeafBlindUiState())
     val uiState: StateFlow<DeafBlindUiState> = _uiState.asStateFlow()
 
-    private var pendingAction: Action? = null
+    private var pendingRequestedAction: RequestedAction? = null
     private var confirmationJob: Job? = null
 
     init {
         // Observe connected clients from LocalServerRegistry
         viewModelScope.launch {
-            while (true) {
-                val count = LocalServerRegistry.activeServer?.getConnectedClientsCount() ?: 0
+            LocalServerRegistry.connectedClientsCount.collect { count ->
                 _uiState.update { it.copy(connectedClientsCount = count) }
-                delay(2000)
             }
         }
     }
@@ -76,10 +74,10 @@ class DeafBlindViewModel(
 
     private fun initiateAction(input: GestureInput) {
         val gesture = mapInputToGesture(input)
-        val action = ActionMapper.getActionForGesture(gesture)
+        val action = RequestedActionMapper.getActionForGesture(gesture)
 
         if (action != null) {
-            pendingAction = action
+            pendingRequestedAction = action
             _uiState.update {
                 it.copy(
                     feedbackMessage = UiText.StringResource(R.string.confirm_action_format, action.name),
@@ -97,10 +95,10 @@ class DeafBlindViewModel(
     }
 
     private fun handleConfirmation(input: GestureInput) {
-        val action = pendingAction
+        val action = pendingRequestedAction
         if (action != null) {
             val gesture = mapInputToGesture(input)
-            val newAction = ActionMapper.getActionForGesture(gesture)
+            val newAction = RequestedActionMapper.getActionForGesture(gesture)
             // * Check if same action is performed before confirming
             if (action.id == newAction?.id) {
                 confirmAction(action)
@@ -111,7 +109,7 @@ class DeafBlindViewModel(
         }
     }
 
-    private fun confirmAction(action: Action) {
+    private fun confirmAction(requestedAction: RequestedAction) {
         confirmationJob?.cancel()
         _uiState.update {
             it.copy(
@@ -121,7 +119,7 @@ class DeafBlindViewModel(
         }
 
         viewModelScope.launch {
-            val result = signalDispatcher.dispatchAction(action)
+            val result = signalDispatcher.dispatchAction(requestedAction)
             if (result is NabdaResult.Success) {
                 _uiState.update { it.copy(feedbackMessage = UiText.StringResource(R.string.sent)) }
                 hapticEngine.performHaptic(HapticEnginePattern.ActionSent)
@@ -135,7 +133,7 @@ class DeafBlindViewModel(
     }
 
     private fun cancelPendingAction(reason: UiText) {
-        pendingAction = null
+        pendingRequestedAction = null
         _uiState.update {
             it.copy(
                 feedbackMessage = reason,

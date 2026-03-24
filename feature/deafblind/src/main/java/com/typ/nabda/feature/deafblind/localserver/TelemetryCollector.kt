@@ -127,7 +127,7 @@ class TelemetryCollector(private val context: Context) {
         return try {
             locationManager.currentLocation()
         } catch (e: Exception) {
-            Log.w(TAG_SERVER, "Failed to read location via Locus", e)
+            Log.w(TAG_SERVER, "Failed to read your location", e)
             null
         }
     }

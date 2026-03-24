@@ -20,6 +20,7 @@ import androidx.core.app.NotificationCompat
 import com.typ.nabda.caregiver.MainActivity
 import com.typ.nabda.caregiver.R
 import com.typ.nabda.core.notifications.NabdaNotificationManager
+import com.typ.nabda.feature.caregiver.localclient.DeviceDiscoveryManager
 import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants
 import com.typ.nabda.infrastructure.localnetwork.client.ConnectionStatus
 import com.typ.nabda.infrastructure.localnetwork.client.LocalClientRegistry
@@ -36,12 +37,14 @@ import org.koin.core.component.inject
  */
 class CaregiverService : Service(), KoinComponent {
 
-    private val notificationManager: NabdaNotificationManager by inject()
+    private val deviceDiscoveryManager by inject<DeviceDiscoveryManager>()
+    private val notificationManager by inject<NabdaNotificationManager>()
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var telemetryClient: TelemetryClient? = null
     private var nsdManager: NsdManager? = null
     private var multicastLock: WifiManager.MulticastLock? = null
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
+    private var lastPairedHost: String? = null
     private var discoveryListener: NsdManager.DiscoveryListener? = null
 
     companion object {
@@ -70,9 +73,9 @@ class CaregiverService : Service(), KoinComponent {
                 setReferenceCounted(true)
                 acquire()
             }
-            Log.d("NABDA_CAREGIVER", "MulticastLock acquired")
+            Log.d("NABDA_CaregiverService", "MulticastLock acquired")
         } catch (e: Exception) {
-            Log.e("NABDA_CAREGIVER", "Failed to acquire MulticastLock", e)
+            Log.e("NABDA_CaregiverService", "Failed to acquire MulticastLock", e)
         }
     }
 
@@ -80,10 +83,10 @@ class CaregiverService : Service(), KoinComponent {
         try {
             if (multicastLock?.isHeld == true) {
                 multicastLock?.release()
-                Log.d("NABDA_CAREGIVER", "MulticastLock released")
+                Log.d("NABDA_CaregiverService", "MulticastLock released")
             }
         } catch (e: Exception) {
-            Log.w("NABDA_CAREGIVER", "Error releasing MulticastLock", e)
+            Log.w("NABDA_CaregiverService", "Error releasing MulticastLock", e)
         }
     }
 
@@ -95,12 +98,12 @@ class CaregiverService : Service(), KoinComponent {
 
         networkCallback = object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
-                Log.d("NABDA_CAREGIVER", "WiFi available - starting discovery")
+                Log.d("NABDA_CaregiverService", "WiFi available - starting discovery")
                 startScanning()
             }
 
             override fun onLost(network: Network) {
-                Log.d("NABDA_CAREGIVER", "WiFi lost - stopping discovery")
+                Log.d("NABDA_CaregiverService", "WiFi lost - stopping discovery")
                 stopScanning()
             }
         }
@@ -112,7 +115,7 @@ class CaregiverService : Service(), KoinComponent {
             val cm = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
             networkCallback?.let { cm.unregisterNetworkCallback(it) }
         } catch (e: Exception) {
-            Log.w("NABDA_CAREGIVER", "Error unregistering network callback", e)
+            Log.w("NABDA_CaregiverService", "Error unregistering network callback", e)
         }
     }
 
@@ -120,11 +123,11 @@ class CaregiverService : Service(), KoinComponent {
         try {
             discoveryListener?.let { nsdManager?.stopServiceDiscovery(it) }
         } catch (e: Exception) {
-            Log.w("NABDA_CAREGIVER", "Failed to stop discovery", e)
+            Log.w("NABDA_CaregiverService", "Failed to stop discovery", e)
         } finally {
             discoveryListener = null
         }
-        telemetryClient?.disconnect()
+        telemetryClient?.stop()
         telemetryClient = null
         LocalClientRegistry.updateStatus(ConnectionStatus.IDLE)
         updateNotification(ConnectionStatus.IDLE)
@@ -132,58 +135,71 @@ class CaregiverService : Service(), KoinComponent {
 
     private fun startScanning() {
         if (discoveryListener == null) {
-            Log.d("NABDA_CAREGIVER", "Discovery listener is null. Initializing...")
+            Log.d("NABDA_CaregiverService", "Discovery listener is null. Initializing...")
             discoveryListener = object : NsdManager.DiscoveryListener {
                 override fun onDiscoveryStarted(regType: String) {
-                    Log.d("NABDA_CAREGIVER", "Discovery started")
+                    Log.d("NABDA_CaregiverService", "Discovery started")
                 }
 
                 override fun onServiceFound(service: NsdServiceInfo) {
-                    Log.d("NABDA_CAREGIVER", "Service found: ${service.serviceName}, Type: ${service.serviceType}")
+                    Log.d("NABDA_CaregiverService", "Service found: ${service.serviceName}, Type: ${service.serviceType}")
                     if (service.serviceName.contains(LocalNetworkConstants.SERVICE_NAME)) {
-                        Log.d("NABDA_CAREGIVER", "Service name matches - resolving...")
+                        Log.d("NABDA_CaregiverService", "Service name matches - resolving...")
                         nsdManager?.resolveService(service, object : NsdManager.ResolveListener {
                             override fun onResolveFailed(serviceInfo: NsdServiceInfo, errorCode: Int) {
-                                Log.e("NABDA_CAREGIVER", "Resolve failed for ${serviceInfo.serviceName}: $errorCode")
+                                Log.e("NABDA_CaregiverService", "Resolve failed for ${serviceInfo.serviceName}: $errorCode")
                             }
 
                             override fun onServiceResolved(serviceInfo: NsdServiceInfo) {
-                                Log.d("NABDA_CAREGIVER", "Service resolved: ${serviceInfo.host}:${serviceInfo.port}")
+                                Log.d("NABDA_CaregiverService", "Service resolved: ${serviceInfo.host}:${serviceInfo.port}")
                                 val host = serviceInfo.host.hostAddress ?: ""
                                 val port = serviceInfo.port
-                                pairWithDevice(host, port)
+
+                                val currentStatus = LocalClientRegistry.status.value
+                                val isAlreadyConnecting = currentStatus == ConnectionStatus.CONNECTING ||
+                                        currentStatus == ConnectionStatus.CONNECTED ||
+                                        currentStatus == ConnectionStatus.RECONNECTING
+
+                                // Only pair if we are not already connected/connecting OR if the host changed
+                                if (!isAlreadyConnecting || host != lastPairedHost) {
+                                    pairWithDevice(host, port)
+                                } else {
+                                    Log.d("NABDA_CaregiverService", "Skipping pairing, already connected/connecting to $host or host is the same.")
+                                }
                             }
                         })
                     }
                 }
 
                 override fun onServiceLost(service: NsdServiceInfo) {
-                    Log.d("NABDA_CAREGIVER", "Service lost")
+                    Log.d("NABDA_CaregiverService", "Service lost")
+                    deviceDiscoveryManager.clearDiscoveredHost()
                 }
 
                 override fun onDiscoveryStopped(regType: String) {
-                    Log.d("NABDA_CAREGIVER", "Discovery stopped")
+                    Log.d("NABDA_CaregiverService", "Discovery stopped")
+                    deviceDiscoveryManager.clearDiscoveredHost()
                 }
 
                 override fun onStartDiscoveryFailed(serviceType: String, errorCode: Int) {
-                    Log.e("NABDA_CAREGIVER", "Start discovery failed for $serviceType: $errorCode")
+                    Log.e("NABDA_CaregiverService", "Start discovery failed for $serviceType: $errorCode")
                     LocalClientRegistry.updateStatus(ConnectionStatus.FAILED)
                     nsdManager?.stopServiceDiscovery(this)
                 }
 
                 override fun onStopDiscoveryFailed(serviceType: String, errorCode: Int) {
-                    Log.w("NABDA_CAREGIVER", "Stop discovery failed for $serviceType: $errorCode")
+                    Log.w("NABDA_CaregiverService", "Stop discovery failed for $serviceType: $errorCode")
                     nsdManager?.stopServiceDiscovery(this)
                 }
             }
         } else {
-            Log.d("NABDA_CAREGIVER", "Discovery already in progress or listener already initialized.")
+            Log.d("NABDA_CaregiverService", "Discovery already in progress or listener already initialized.")
         }
 
         LocalClientRegistry.updateStatus(ConnectionStatus.SCANNING)
         updateNotification(ConnectionStatus.SCANNING)
 
-        Log.d("NABDA_CAREGIVER", "Calling discoverServices")
+        Log.d("NABDA_CaregiverService", "Calling discoverServices")
         nsdManager?.discoverServices(
             LocalNetworkConstants.SERVICE_TYPE,
             NsdManager.PROTOCOL_DNS_SD,
@@ -191,15 +207,27 @@ class CaregiverService : Service(), KoinComponent {
         )
     }
 
-    private fun pairWithDevice(host: String, port: Int) {
+    fun pairWithDevice(host: String, port: Int) {
+        if (lastPairedHost == host && LocalClientRegistry.status.value == ConnectionStatus.CONNECTED) {
+            Log.d("NABDA_CaregiverService", "Already connected to $host, skipping.")
+            return
+        }
+
+        Log.i("NABDA_CaregiverService", "Pairing with device at $host:$port (Previous: $lastPairedHost)")
+        lastPairedHost = host
+
+        // Stop current client if any
+        telemetryClient?.stop()
+        telemetryClient = null
+
+        // Update registry and UI
         LocalClientRegistry.updateStatus(ConnectionStatus.PAIRING)
         updateNotification(ConnectionStatus.PAIRING)
 
         telemetryClient = TelemetryClient(host, port)
         telemetryClient?.connect()
 
-        LocalClientRegistry.updateStatus(ConnectionStatus.PAIRED)
-        updateNotification(ConnectionStatus.PAIRED)
+        deviceDiscoveryManager.updateDiscoveredHost(host, port)
 
         serviceScope.launch {
             launch {
@@ -217,15 +245,14 @@ class CaregiverService : Service(), KoinComponent {
                     )
                 }
             }
-
+            // Observation of status is now handled reactive by TelemetryClient updating LocalClientRegistry.status
             launch {
-                telemetryClient?.isConnected?.collect { connected ->
-                    if (connected) {
-                        LocalClientRegistry.updateStatus(ConnectionStatus.PAIRED)
-                        updateNotification(ConnectionStatus.PAIRED)
-                    } else {
-                        LocalClientRegistry.updateStatus(ConnectionStatus.IDLE)
-                        updateNotification(ConnectionStatus.IDLE)
+                LocalClientRegistry.status.collect { status ->
+                    updateNotification(status)
+                    if (status == ConnectionStatus.CONNECTED) {
+                        deviceDiscoveryManager.updateDiscoveredHost(host, port)
+                    } else if (status == ConnectionStatus.IDLE || status == ConnectionStatus.FAILED) {
+                        deviceDiscoveryManager.clearDiscoveredHost()
                     }
                 }
             }
@@ -247,6 +274,9 @@ class CaregiverService : Service(), KoinComponent {
 
     override fun onDestroy() {
         stopScanning()
+        telemetryClient?.stop()
+        telemetryClient = null
+        lastPairedHost = null
         releaseMulticastLock()
         unregisterNetworkCallback()
         currentInstance = null

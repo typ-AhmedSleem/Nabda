@@ -1,8 +1,14 @@
 package com.typ.nabda.infrastructure.localnetwork.server
 
+import android.util.Log
 import com.typ.nabda.core.model.TelemetryHeartbeatPayload
 import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants
+import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants.TAG_SERVER
+import com.typ.nabda.infrastructure.localnetwork.client.ServerStatus
+import com.typ.nabda.infrastructure.localnetwork.model.ActionAckPayload
 import com.typ.nabda.infrastructure.localnetwork.model.ActionPayload
+import com.typ.nabda.infrastructure.localnetwork.model.CaregiverActionPayload
+import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.install
 import io.ktor.server.cio.CIO
@@ -11,7 +17,10 @@ import io.ktor.server.engine.EmbeddedServer
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.origin
+import io.ktor.server.request.receive
+import io.ktor.server.response.respond
 import io.ktor.server.routing.get
+import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import io.ktor.server.websocket.DefaultWebSocketServerSession
 import io.ktor.server.websocket.WebSockets
@@ -25,6 +34,8 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.isActive
 import kotlinx.serialization.json.Json
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 /**
  * Embedded Ktor server that broadcasts telemetry and actions to connected Caregiver apps.
@@ -39,8 +50,10 @@ class LocalKtorServer(
     private val clients = ConcurrentHashMap<String, DefaultWebSocketServerSession>()
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
+    @OptIn(ExperimentalUuidApi::class)
     fun start() {
-        server = embeddedServer(CIO, port = port) {
+        LocalServerRegistry.updateStatus(ServerStatus.STARTING)
+        server = embeddedServer(CIO, port = port, host = LocalNetworkConstants.SERVER_HOST) {
             install(ContentNegotiation) {
                 json()
             }
@@ -55,12 +68,15 @@ class LocalKtorServer(
                 webSocket("/ws/events") {
                     val clientId = call.request.origin.remoteHost
                     clients[clientId] = this
+                    LocalServerRegistry.updateClientsCount(clients.size)
                     onClientConnected(clientId)
+                    Log.d(TAG_SERVER, "Client connected: $clientId. Total: ${clients.size}")
 
                     try {
                         for (frame in incoming) {
                             if (frame is Frame.Text) {
                                 val text = frame.readText()
+                                Log.d(TAG_SERVER, "Received: $text")
                                 // Handle incoming messages (like acknowledgements)
                                 if (text.startsWith("ACK:")) {
                                     val actionId = text.removePrefix("ACK:")
@@ -69,22 +85,59 @@ class LocalKtorServer(
                             }
                         }
                     } catch (e: Exception) {
-                        // Log or handle connection issues
+                        Log.e(TAG_SERVER, "Error in WebSocket for $clientId", e)
                     } finally {
                         clients.remove(clientId)
+                        LocalServerRegistry.updateClientsCount(clients.size)
                         onClientDisconnected(clientId)
+                        Log.d(TAG_SERVER, "Client disconnected: $clientId. Total: ${clients.size}")
                     }
                 }
 
                 get("/status") {
-                    // Simple health check
+                    Log.d(TAG_SERVER, "Received /status request")
+                    call.respond(HttpStatusCode.OK, "Server is running")
+                }
+
+                // ── POST /action ────────────────────────────────────────────────
+                post("/action") {
+                    Log.d(TAG_SERVER, "Received /action request")
+                    val correlationId = Uuid.random().toString()
+                    try {
+                        val actionPayload = call.receive<CaregiverActionPayload>()
+                        onActionReceived(actionPayload.actionId)
+                        call.respond(
+                            status = HttpStatusCode.OK,
+                            message = ActionAckPayload(
+                                correlationId = correlationId,
+                                success = true,
+                                message = "Received '${actionPayload.actionId}' successfully."
+                            )
+                        )
+                        Log.d(TAG_SERVER, "Received /action request for ${actionPayload.actionId} and responded with ACK.")
+                    } catch (e: Exception) {
+                        Log.w(TAG_SERVER, "Bad request on /action", e)
+                        call.respond(
+                            status = HttpStatusCode.BadRequest,
+                            message = ActionAckPayload(
+                                success = false,
+                                correlationId = correlationId,
+                                message = "Bad request on '/action'."
+                            )
+                        )
+                    }
                 }
             }
         }.start(wait = false)
+        LocalServerRegistry.updateStatus(ServerStatus.RUNNING)
+        Log.i(TAG_SERVER, "Server started on host ${LocalNetworkConstants.SERVER_HOST} port $port")
     }
 
     fun stop() {
-        server?.stop(1000, 2000)
+        server?.stop(1000, 1000)
+        server = null
+        LocalServerRegistry.updateStatus(ServerStatus.OFFLINE)
+        Log.i(TAG_SERVER, "Server stopped")
         scope.cancel()
     }
 

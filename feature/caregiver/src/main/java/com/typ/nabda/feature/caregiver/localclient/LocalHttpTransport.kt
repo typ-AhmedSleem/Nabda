@@ -9,7 +9,7 @@ import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants.DEMO_AUTH
 import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants.READ_TIMEOUT_MS
 import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants.TAG_CLIENT
 import com.typ.nabda.infrastructure.localnetwork.model.ActionAckPayload
-import com.typ.nabda.infrastructure.localnetwork.model.ActionPayload
+import com.typ.nabda.infrastructure.localnetwork.model.CaregiverActionPayload
 import com.typ.nabda.infrastructure.localnetwork.transport.TelemetryTransport
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -17,6 +17,7 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.engine.cio.endpoint
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -53,7 +54,7 @@ class LocalHttpTransport(
         }
         install(Logging) {
             level = LogLevel.HEADERS
-            logger = object : io.ktor.client.plugins.logging.Logger {
+            logger = object : Logger {
                 override fun log(message: String) {
                     Log.d(TAG_CLIENT, message)
                 }
@@ -85,7 +86,7 @@ class LocalHttpTransport(
         return response.body()
     }
 
-    override suspend fun sendAction(action: ActionPayload): ActionAckPayload {
+    override suspend fun sendAction(action: CaregiverActionPayload): ActionAckPayload {
         val response = client.post("${requireBaseUrl()}/action") {
             header(AUTH_HEADER, "$AUTH_BEARER_PREFIX$DEMO_AUTH_TOKEN")
             contentType(ContentType.Application.Json)

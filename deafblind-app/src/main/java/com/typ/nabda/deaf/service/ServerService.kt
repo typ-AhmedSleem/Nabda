@@ -17,11 +17,10 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import com.typ.nabda.core.model.TelemetryHeartbeatPayload
 import com.typ.nabda.deaf.MainActivity
+import com.typ.nabda.deafblind.R
 import com.typ.nabda.feature.deafblind.localserver.TelemetryCollector
 import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants
-import com.typ.nabda.infrastructure.localnetwork.model.ActionPayload
 import com.typ.nabda.infrastructure.localnetwork.server.LocalKtorServer
 import com.typ.nabda.infrastructure.localnetwork.server.LocalServerRegistry
 import kotlinx.coroutines.CoroutineScope
@@ -62,7 +61,7 @@ class ServerService : Service() {
         private const val ACTION_STOP_SERVER = "com.typ.nabda.ACTION_STOP_SERVER"
         private const val ACTION_START_SERVER = "com.typ.nabda.ACTION_START_SERVER"
 
-        // Simple singleton-like access for the UI to observe state
+        /*// Simple singleton-like access for the UI to observe state
         // In a real app, this would be managed via Koin/Dagger
         var currentInstance: ServerService? = null
             private set
@@ -73,12 +72,12 @@ class ServerService : Service() {
 
         suspend fun broadcastTelemetry(telemetry: TelemetryHeartbeatPayload) {
             LocalServerRegistry.activeServer?.broadcastTelemetry(telemetry)
-        }
+        }*/
     }
 
     override fun onCreate() {
         super.onCreate()
-        currentInstance = this
+//        currentInstance = this
         nsdManager = getSystemService(NSD_SERVICE) as NsdManager
         telemetryCollector = TelemetryCollector(applicationContext)
 
@@ -248,7 +247,7 @@ class ServerService : Service() {
         stopServer()
         releaseMulticastLock()
         unregisterNetworkCallback()
-        currentInstance = null
+//        currentInstance = null
         super.onDestroy()
     }
 
@@ -260,13 +259,13 @@ class ServerService : Service() {
         )
 
         val isRunning = ktorServer != null
-        val statusTitle = if (isRunning) "Nabda Server: RUNNING" else "Nabda Server: STOPPED"
+        val statusTitle = if (isRunning) getString(R.string.server_status_running) else getString(R.string.server_status_stopped)
 
-        val statusText = if (!isRunning) "Server is currently offline"
-        else if (clientsCount == 0) "Waiting for clients..."
-        else "$clientsCount client(s) connected"
+        val statusText = if (!isRunning) getString(R.string.server_offline)
+        else if (clientsCount == 0) getString(R.string.server_waiting_for_clients)
+        else getString(R.string.server_clients_connected, clientsCount)
 
-        val actionText = if (isRunning) "Stop Server" else "Start Server"
+        val actionText = if (isRunning) getString(R.string.action_stop_server) else getString(R.string.action_start_server)
         val actionIntent = Intent(this, ServerService::class.java).apply {
             action = if (isRunning) ACTION_STOP_SERVER else ACTION_START_SERVER
         }
@@ -301,7 +300,7 @@ class ServerService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "Nabda Server Status",
+                getString(R.string.server_notification_channel_name),
                 NotificationManager.IMPORTANCE_LOW
             )
             val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager

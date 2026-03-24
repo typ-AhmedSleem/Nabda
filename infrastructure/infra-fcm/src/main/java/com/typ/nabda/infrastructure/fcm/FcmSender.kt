@@ -4,7 +4,7 @@ import android.util.Log
 import com.typ.nabda.core.common.NabdaResult
 import com.typ.nabda.core.messaging.MessageSender
 import com.typ.nabda.core.messaging.TelemetrySender
-import com.typ.nabda.core.model.Action
+import com.typ.nabda.core.model.RequestedAction
 import com.typ.nabda.core.model.TelemetryHeartbeatPayload
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -24,14 +24,14 @@ class FcmSender(
             .create(FcmService::class.java)
     }
 
-    override suspend fun sendAction(targetToken: String, action: Action): NabdaResult<Unit> {
+    override suspend fun sendAction(targetToken: String, requestedAction: RequestedAction): NabdaResult<Unit> {
         return withContext(Dispatchers.IO) {
             try {
                 val dataPayload = mapOf(
                     "type" to "ACTION",
-                    "actionId" to action.id,
-                    "actionName" to action.name,
-                    "actionPriority" to action.priority.name,
+                    "actionId" to requestedAction.id,
+                    "actionName" to requestedAction.name,
+                    "actionPriority" to requestedAction.priority.name,
                     "timestamp" to System.currentTimeMillis().toString()
                 )
 

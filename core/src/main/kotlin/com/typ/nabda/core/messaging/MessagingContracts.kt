@@ -1,7 +1,7 @@
 package com.typ.nabda.core.messaging
 
 import com.typ.nabda.core.common.NabdaResult
-import com.typ.nabda.core.model.Action
+import com.typ.nabda.core.model.RequestedAction
 import com.typ.nabda.core.model.TelemetryHeartbeatPayload
 
 interface TokenRepository {
@@ -12,7 +12,7 @@ interface TokenRepository {
 interface MessageSender {
     suspend fun sendAction(
         targetToken: String,
-        action: Action,
+        requestedAction: RequestedAction,
     ): NabdaResult<Unit>
 }
 
@@ -28,5 +28,5 @@ fun interface TelemetryHandler {
 }
 
 fun interface ActionHandler {
-    fun onActionReceived(action: Action)
+    fun onActionReceived(requestedAction: RequestedAction)
 }
