@@ -5,8 +5,6 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,11 +14,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +41,7 @@ import androidx.core.content.ContextCompat
 import com.typ.nabda.designsystem.theme.NabdaTheme
 import com.typ.nabda.feature.deafblind.R
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeafBlindPermissionsScreen(
     onContinue: () -> Unit,
@@ -61,6 +64,13 @@ fun DeafBlindPermissionsScreen(
         )
     }
 
+    LaunchedEffect(Unit) {
+        // If all permissions are granted, continue
+        if (notificationsEnabled && locationEnabled) {
+            onContinue()
+        }
+    }
+
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -72,98 +82,96 @@ fun DeafBlindPermissionsScreen(
         locationEnabled = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: locationEnabled
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(24.dp)
-    ) {
-        // Top Title
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = stringResource(R.string.permissions),
-                fontWeight = FontWeight.Bold,
-                fontSize = 20.sp,
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.permissions),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                    )
+                }
             )
         }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it)
+                .padding(24.dp)
+        ) {
+            // Headline
+            Text(
+                text = stringResource(R.string.enable_permissions),
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF001F35),
+                fontSize = 28.sp,
+            )
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // Headline
-        Text(
-            text = stringResource(R.string.enable_permissions),
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF001F35),
-            fontSize = 28.sp,
-        )
+            // Subtitle
+            Text(
+                text = stringResource(R.string.permissions_subtitle),
+                color = Color(0xFF74777F),
+                lineHeight = 24.sp,
+                fontSize = 16.sp,
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-        // Subtitle
-        Text(
-            text = stringResource(R.string.permissions_subtitle),
-            color = Color(0xFF74777F),
-            lineHeight = 24.sp,
-            fontSize = 16.sp,
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Permission Cards
-        PermissionCard(
-            title = stringResource(R.string.notifications_title),
-            description = stringResource(R.string.notifications_desc),
-            isEnabled = notificationsEnabled,
-            onToggle = {
-                if (!it && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    // Cannot easily un-grant from app, but we can show state
-                } else if (it) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        launcher.launch(arrayOf(Manifest.permission.POST_NOTIFICATIONS))
+            // Permission Cards
+            PermissionCard(
+                title = stringResource(R.string.notifications_title),
+                description = stringResource(R.string.notifications_desc),
+                isEnabled = notificationsEnabled,
+                onToggle = {
+                    if (!it && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        // Cannot easily un-grant from app, but we can show state
+                    } else if (it) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            launcher.launch(arrayOf(Manifest.permission.POST_NOTIFICATIONS))
+                        }
                     }
                 }
-            }
-        )
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        PermissionCard(
-            title = stringResource(R.string.location_title),
-            description = stringResource(R.string.location_desc),
-            isEnabled = locationEnabled,
-            onToggle = {
-                if (it) {
-                    launcher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
-                }
-            }
-        )
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Continue Button
-        Button(
-            onClick = onContinue,
-            enabled = notificationsEnabled && locationEnabled,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(64.dp),
-            shape = MaterialTheme.shapes.extraLarge
-        ) {
-            Text(
-                text = stringResource(R.string.continue_label),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (notificationsEnabled && locationEnabled) {
-                    Color.White
-                } else {
-                    Color(0xFF74777F)
+            PermissionCard(
+                title = stringResource(R.string.location_title),
+                description = stringResource(R.string.location_desc),
+                isEnabled = locationEnabled,
+                onToggle = {
+                    if (it) {
+                        launcher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+                    }
                 }
             )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Continue Button
+            Button(
+                onClick = onContinue,
+                enabled = notificationsEnabled && locationEnabled,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp),
+                shape = MaterialTheme.shapes.extraLarge
+            ) {
+                Text(
+                    text = stringResource(R.string.continue_label),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (notificationsEnabled && locationEnabled) {
+                        Color.White
+                    } else {
+                        Color(0xFF74777F)
+                    }
+                )
+            }
         }
     }
 }
