@@ -33,7 +33,7 @@ object CaregiverQuickActions {
         ),
         QuickActionItem(
             action = CaregiverAction.SLEEP_TIME,
-            titleResId = R.string.action_im_coming_title,
+            titleResId = R.string.action_sleep_time_title,
             descResId = R.string.action_im_coming_desc,
             icon = Icons.Filled.Bedtime,
             iconBg = Color(0xFFE8F5E9),

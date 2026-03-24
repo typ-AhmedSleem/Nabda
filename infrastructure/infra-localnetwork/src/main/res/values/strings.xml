@@ -9,4 +9,5 @@
     <string name="status_reconnecting">Reconnecting…</string>
     <string name="status_failed">Connection Failed</string>
     <string name="status_wifi_disabled">WIFI Disabled</string>
+    <string name="desc_status_disconnected">Nabda Assistant app is whether disconnected from network or you might have lost connection.\nTrying to reconnect…</string>
 </resources>
