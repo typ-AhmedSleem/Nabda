@@ -49,10 +49,11 @@ class AndroidHapticEngine(private val context: Context) : HapticEngine {
                 .zip(pattern.amplitudes.map { it.coerceIn(1, 255).toLong() })
 
             onShotPattern.forEach { (dur, amp) ->
-                VibrationEffect.createOneShot(
+                val effect = VibrationEffect.createOneShot(
                     dur,
                     amp.toInt()
                 )
+                vibrator.vibrate(effect)
             }
             Log.d("NABDA_HapticEngine", "Performed ${onShotPattern.size}-rounds oneshot haptic pattern: '$pattern'.")
         }

@@ -34,44 +34,44 @@ sealed class HapticEnginePattern(
 
     @Serializable
     data object NotConnected : HapticEnginePattern(
-        amplitudes = intArrayOf(0, 150, 0, 150),
-        durations = longArrayOf(100, 200, 100, 200)
+        amplitudes = intArrayOf(150, 0, 150),
+        durations = longArrayOf(200, 100, 200)
     )
 
     @Serializable
     data object ConfirmActionAgain : HapticEnginePattern(
-        amplitudes = intArrayOf(0, 200),
-        durations = longArrayOf(100, 300)
+        amplitudes = intArrayOf(200),
+        durations = longArrayOf(300)
     )
 
     @Serializable
     data object ActionSent : HapticEnginePattern(
-        amplitudes = intArrayOf(0, 255, 0, 255),
-        durations = longArrayOf(50, 100, 50, 100)
+        amplitudes = intArrayOf(255, 0, 255),
+        durations = longArrayOf(100, 50, 100)
     )
 
     @Serializable
     data object ActionNotConfirmed : HapticEnginePattern(
-        amplitudes = intArrayOf(0, 100, 0, 100, 0, 100),
-        durations = longArrayOf(50, 150, 50, 150, 50, 150)
+        amplitudes = intArrayOf(100, 0, 100, 0, 100),
+        durations = longArrayOf(150, 50, 150, 50, 150)
     )
 
     @Serializable
     data object NormalRequest : HapticEnginePattern(
-        amplitudes = intArrayOf(0, 150),
-        durations = longArrayOf(100, 200)
+        amplitudes = intArrayOf(150),
+        durations = longArrayOf(200)
     )
 
     @Serializable
     data object AssistanceRequest : HapticEnginePattern(
-        amplitudes = intArrayOf(0, 200, 0, 200, 0, 200),
-        durations = longArrayOf(100, 200, 100, 200, 100, 200)
+        amplitudes = intArrayOf(200, 0, 200, 0, 200),
+        durations = longArrayOf(200, 100, 200, 100, 200)
     )
 
     @Serializable
     data object EmergencyRequest : HapticEnginePattern(
-        amplitudes = intArrayOf(0, 255, 0, 255, 0, 255, 0, 255),
-        durations = longArrayOf(50, 300, 50, 300, 50, 300, 50, 300)
+        amplitudes = intArrayOf(255, 0, 255, 0, 255, 0, 255),
+        durations = longArrayOf(300, 50, 300, 50, 300, 50, 300)
     )
 
 }
