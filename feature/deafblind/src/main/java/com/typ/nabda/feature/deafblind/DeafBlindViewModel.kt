@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.typ.nabda.core.actions.RequestedActionMapper
 import com.typ.nabda.core.common.NabdaResult
 import com.typ.nabda.core.dispatcher.SignalDispatcher
+import com.typ.nabda.core.gestures.GestureClassifier
 import com.typ.nabda.core.haptic.HapticEngine
 import com.typ.nabda.core.messaging.IncomingActionDispatcher
 import com.typ.nabda.core.model.GestureInput
@@ -39,7 +40,8 @@ class DeafBlindViewModel(
     val uiState: StateFlow<DeafBlindUiState> = _uiState.asStateFlow()
 
     private var pendingRequestedAction: RequestedAction? = null
-    private var confirmationJob: Job? = null
+    private var jobActionConfirmation: Job? = null
+    private var jobMakingTextReady: Job? = null
 
     init {
         // Observe connected clients from LocalServerRegistry
@@ -73,10 +75,12 @@ class DeafBlindViewModel(
     }
 
     private fun initiateAction(input: GestureInput) {
+        hapticEngine.performHaptic(HapticEnginePattern.NormalRequest)
         val gesture = mapInputToGesture(input)
         val action = RequestedActionMapper.getActionForGesture(gesture)
 
         if (action != null) {
+            jobMakingTextReady?.cancel()
             pendingRequestedAction = action
             _uiState.update {
                 it.copy(
@@ -86,8 +90,8 @@ class DeafBlindViewModel(
             }
             hapticEngine.performHaptic(HapticEnginePattern.ConfirmActionAgain)
 
-            confirmationJob?.cancel()
-            confirmationJob = viewModelScope.launch {
+            jobActionConfirmation?.cancel()
+            jobActionConfirmation = viewModelScope.launch {
                 delay(5000) // 5 seconds to confirm
                 cancelPendingAction(UiText.StringResource(R.string.timed_out))
             }
@@ -97,6 +101,7 @@ class DeafBlindViewModel(
     private fun handleConfirmation(input: GestureInput) {
         val action = pendingRequestedAction
         if (action != null) {
+            jobMakingTextReady?.cancel()
             val gesture = mapInputToGesture(input)
             val newAction = RequestedActionMapper.getActionForGesture(gesture)
             // * Check if same action is performed before confirming
@@ -110,7 +115,7 @@ class DeafBlindViewModel(
     }
 
     private fun confirmAction(requestedAction: RequestedAction) {
-        confirmationJob?.cancel()
+        jobActionConfirmation?.cancel()
         _uiState.update {
             it.copy(
                 feedbackMessage = UiText.StringResource(R.string.sending),
@@ -127,6 +132,7 @@ class DeafBlindViewModel(
                 _uiState.update { it.copy(feedbackMessage = UiText.StringResource(R.string.failed)) }
                 hapticEngine.performHaptic(HapticEnginePattern.ActionNotConfirmed)
             }
+            jobMakingTextReady?.cancel()
             delay(2000)
             _uiState.update { it.copy(feedbackMessage = UiText.StringResource(R.string.ready)) }
         }
@@ -140,13 +146,13 @@ class DeafBlindViewModel(
                 isWaitingForConfirmation = false
             )
         }
-        viewModelScope.launch {
+        jobMakingTextReady = viewModelScope.launch {
             delay(2000)
             _uiState.update { it.copy(feedbackMessage = UiText.StringResource(R.string.ready)) }
         }
     }
 
     private fun mapInputToGesture(input: GestureInput): GestureType {
-        return com.typ.nabda.core.gestures.GestureClassifier.classify(input)
+        return GestureClassifier.classify(input)
     }
 }

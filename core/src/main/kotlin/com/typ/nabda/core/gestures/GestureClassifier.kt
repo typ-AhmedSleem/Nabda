@@ -7,6 +7,8 @@ import kotlin.math.abs
 
 object GestureClassifier {
 
+    private const val DRAG_THRESHOLD = 350
+
     fun classify(input: GestureInput): GestureType {
         val fingers = input.fingerCount
         val direction = input.direction
@@ -54,7 +56,7 @@ object GestureClassifier {
         val absDx = abs(dx)
         val absDy = abs(dy)
 
-        if (absDx < 50 && absDy < 50) return GestureDirection.NONE // Tap threshold check
+        if (absDx < DRAG_THRESHOLD && absDy < DRAG_THRESHOLD) return GestureDirection.NONE // Tap threshold check
 
         return if (absDx > absDy) {
             if (dx > 0) GestureDirection.RIGHT else GestureDirection.LEFT

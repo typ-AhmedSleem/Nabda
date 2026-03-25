@@ -61,6 +61,7 @@
     <string name="action_sent">Action Sent</string>
     <string name="action_delivered">Action Delivered</string>
     <string name="action_not_sent">Action not sent</string>
+    <string name="connection_lost">Connection Lost</string>
 
     <!-- Tabs -->
     <string name="tab_metrics">Metrics</string>

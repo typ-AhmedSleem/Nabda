@@ -168,7 +168,7 @@ class CaregiverViewModel(
                     }
                     Log.i("NABDA_CaregiverViewModel", "sendAction: ACK='$ack'.")
                 } else {
-                    // Fallback to existing SignalDispatcher (Requires pairing)
+                    showToast(context.getString(R.string.connection_lost))
                     Log.w("NABDA_CaregiverViewModel", "No local device found for direct action")
                 }
             } catch (e: Exception) {

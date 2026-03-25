@@ -61,6 +61,7 @@
     <string name="action_sent">تبعت الإجراء</string>
     <string name="action_delivered">وصل الإجراء</string>
     <string name="action_not_sent">الإجراء متبعتش</string>
+    <string name="connection_lost">الاتصال اتقطع</string>
 
     <!-- Tabs -->
     <string name="tab_metrics">الحالة</string>
