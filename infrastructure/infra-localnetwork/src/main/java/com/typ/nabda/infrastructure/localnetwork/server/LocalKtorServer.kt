@@ -58,19 +58,20 @@ class LocalKtorServer(
                 json()
             }
             install(WebSockets) {
-                pingPeriodMillis = 15000L
-                timeoutMillis = 30000L
+                pingPeriodMillis = 5000L
+                timeoutMillis = 10000L
                 maxFrameSize = Long.MAX_VALUE
                 masking = false
             }
 
             routing {
                 webSocket("/ws/events") {
-                    val clientId = call.request.origin.remoteHost
-                    clients[clientId] = this
+                    val remoteHost = call.request.origin.remoteHost
+                    val connectionId = Uuid.random().toString()
+                    clients[connectionId] = this
                     LocalServerRegistry.updateClientsCount(clients.size)
-                    onClientConnected(clientId)
-                    Log.d(TAG_SERVER, "Client connected: $clientId. Total: ${clients.size}")
+                    onClientConnected(remoteHost)
+                    Log.d(TAG_SERVER, "Client connected: $connectionId ($remoteHost). Total: ${clients.size}")
 
                     try {
                         for (frame in incoming) {
@@ -85,12 +86,12 @@ class LocalKtorServer(
                             }
                         }
                     } catch (e: Exception) {
-                        Log.e(TAG_SERVER, "Error in WebSocket for $clientId", e)
+                        Log.w(TAG_SERVER, "Socket connection closed/error for $connectionId: ${e.message}")
                     } finally {
-                        clients.remove(clientId)
+                        clients.remove(connectionId)
                         LocalServerRegistry.updateClientsCount(clients.size)
-                        onClientDisconnected(clientId)
-                        Log.d(TAG_SERVER, "Client disconnected: $clientId. Total: ${clients.size}")
+                        onClientDisconnected(remoteHost)
+                        Log.d(TAG_SERVER, "Client disconnected: $connectionId ($remoteHost). Total: ${clients.size}")
                     }
                 }
 
