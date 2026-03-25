@@ -20,9 +20,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Swipe
-import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -32,6 +29,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -66,17 +64,19 @@ fun DeafBlindScreen(
     onNavigateToTests: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
+    val hasConnectedClients by remember(uiState.connectedClientsCount) {
+        derivedStateOf { uiState.connectedClientsCount > 0 }
+    }
     val primaryColor = MaterialTheme.colorScheme.primary
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = if (uiState.connectedClientsCount > 0) {
+                    containerColor = if (hasConnectedClients) {
                         MaterialTheme.colorScheme.background
                     } else {
-                        MaterialTheme.colorScheme.background.copy(0.5f)
+                        MaterialTheme.colorScheme.errorContainer
                     },
                     titleContentColor = MaterialTheme.colorScheme.onBackground,
                 ),
@@ -100,10 +100,10 @@ fun DeafBlindScreen(
                 }
             )
         },
-        containerColor = if (uiState.connectedClientsCount > 0) {
+        containerColor = if (hasConnectedClients) {
             MaterialTheme.colorScheme.background
         } else {
-            MaterialTheme.colorScheme.background.copy(0.5f)
+            MaterialTheme.colorScheme.errorContainer
         }
     ) { insetPaddings ->
         Box(
@@ -111,7 +111,7 @@ fun DeafBlindScreen(
                 .fillMaxSize()
                 .padding(insetPaddings)
                 .pointerInput(Unit) {
-                    if (uiState.connectedClientsCount == 0) return@pointerInput
+//                    if (!hasConnectedClients) return@pointerInput
                     detectCustomGestures(
                         onPointersChanged = { viewModel.onPointersChanged(it) },
                         onGesture = { viewModel.onGestureInput(it) }
@@ -124,7 +124,7 @@ fun DeafBlindScreen(
                 modifier = Modifier.align(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                AnimatedVisibility(uiState.connectedClientsCount > 0) {
+                AnimatedVisibility(hasConnectedClients) {
                     Text(
                         text = uiState.feedbackMessage.asString(),
                         style = MaterialTheme.typography.displaySmall.copy(
@@ -170,7 +170,7 @@ fun DeafBlindScreen(
                 ),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                BottomIcon(Icons.Default.Swipe, stringResource(R.string.swipe))
+//                BottomIcon(Icons.Default.Swipe, stringResource(R.string.swipe))
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
@@ -178,32 +178,32 @@ fun DeafBlindScreen(
                         .heightIn(min = 36.dp)
                         .clip(MaterialTheme.shapes.extraLarge)
                         .background(
-                            if (uiState.connectedClientsCount > 0) {
-                                MaterialTheme.colorScheme.primaryContainer
+                            color = if (hasConnectedClients) {
+                                MaterialTheme.colorScheme.onBackground
                             } else {
-                                MaterialTheme.colorScheme.errorContainer
+                                MaterialTheme.colorScheme.onErrorContainer
                             }
                         )
                 ) {
                     Text(
                         maxLines = 2,
                         textAlign = TextAlign.Center,
-                        text = if (uiState.connectedClientsCount > 0) stringResource(
+                        text = if (hasConnectedClients) stringResource(
                             R.string.clients_connected_format,
                             uiState.connectedClientsCount
                         ) else stringResource(R.string.no_clients_connected),
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                        color = if (uiState.connectedClientsCount > 0) {
-                            MaterialTheme.colorScheme.onPrimaryContainer
+                        color = if (hasConnectedClients) {
+                            MaterialTheme.colorScheme.background
                         } else {
-                            MaterialTheme.colorScheme.onErrorContainer
+                            MaterialTheme.colorScheme.errorContainer
                         },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 8.dp, vertical = 2.dp)
                     )
                 }
-                BottomIcon(Icons.Default.TouchApp, stringResource(R.string.tap))
+//                BottomIcon(Icons.Default.TouchApp, stringResource(R.string.tap))
             }
         }
     }
@@ -277,27 +277,7 @@ suspend fun PointerInputScope.detectCustomGestures(
 
 @Preview(locale = "ar", uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL)
 @Composable
-private fun DeafBlindScreenPreviewDark() {
-    NabdaTheme {
-        val ctx = LocalContext.current
-        val vm = remember {
-            DeafBlindViewModel(
-                signalDispatcher = object : SignalDispatcher {
-                    override suspend fun dispatchAction(requestedAction: RequestedAction): NabdaResult<Unit> {
-                        return NabdaResult.Success(Unit)
-                    }
-                },
-                incomingActionDispatcher = IncomingActionDispatcher(),
-                hapticEngine = AndroidHapticEngine(ctx),
-            )
-        }
-        DeafBlindScreen(vm)
-    }
-}
-
-@Preview(locale = "ar")
-@Composable
-private fun DeafBlindScreenPreviewLight() {
+private fun DeafBlindScreenPreviewNoClients() {
     NabdaTheme {
         val ctx = LocalContext.current
         val vm = remember {
