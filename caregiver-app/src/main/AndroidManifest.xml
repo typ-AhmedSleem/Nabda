@@ -28,6 +28,10 @@
         android:theme="@style/Theme.Nabda"
         android:usesCleartextTraffic="true">
 
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyDxdvi9y2BbIWEsLka_520LYBLs9kzpwh0" />
+
         <activity
             android:name="com.typ.nabda.caregiver.MainActivity"
             android:exported="true"
