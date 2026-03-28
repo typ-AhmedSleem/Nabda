@@ -144,6 +144,8 @@ class CaregiverViewModel(
             isSilentMode = payload.isSilentMode ?: false,
             batteryPercentage = payloadBatteryPercentage,
             locationLabel = lastGeocodedLocationLabel.value,
+            latitude = payload.location?.latitude,
+            longitude = payload.location?.longitude,
         )
     }
 
