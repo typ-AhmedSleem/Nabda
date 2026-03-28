@@ -5,6 +5,7 @@ import android.content.Intent
 import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -85,6 +86,7 @@ import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import org.koin.compose.viewmodel.koinViewModel
+import java.util.Locale
 
 enum class CaregiverTab {
     METRICS, ACTIONS, HISTORY
@@ -396,7 +398,46 @@ fun MetricsScreen(
                 fontSize = 22.sp
             )
             if (telemetryState?.latitude != null && telemetryState.longitude != null) {
-                Spacer(Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.longitude_label).uppercase(),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onBackground,
+                        )
+                        Text(
+                            text = String.format(
+                                locale = Locale.getDefault(),
+                                format = "%.5f", telemetryState.longitude
+                            ),
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.latitude_label).uppercase(),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onBackground,
+                        )
+                        Text(
+                            text = String.format(
+                                locale = Locale.getDefault(),
+                                format = "%.5f", telemetryState.latitude
+                            ),
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                }
+                Spacer(Modifier.height(4.dp))
                 TelemetryMap(
                     latitude = telemetryState.latitude,
                     longitude = telemetryState.longitude
@@ -520,32 +561,47 @@ fun TelemetryMap(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(200.dp)
+            .height(250.dp)
             .clip(RoundedCornerShape(16.dp))
+            .border(
+                width = 1.dp,
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.outline,
+            )
     ) {
         GoogleMap(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable {
-                    runCatching {
-                        val uri = "geo:$latitude,$longitude?q=$latitude,$longitude".toUri()
-                        val intent = Intent(Intent.ACTION_VIEW, uri)
-                        context.startActivity(intent)
-                    }.onFailure {
-                        Log.w("MetricsScreen", "Failed to open map", it)
-                    }
-                },
+            modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
-            properties = MapProperties(isMyLocationEnabled = false),
-            uiSettings = MapUiSettings(
-                zoomControlsEnabled = false,
-                zoomGesturesEnabled = false,
-                scrollGesturesEnabled = false,
-                rotationGesturesEnabled = false,
-                tiltGesturesEnabled = false,
-                myLocationButtonEnabled = false,
-                mapToolbarEnabled = false
-            )
+            properties = remember {
+                MapProperties(
+                    isMyLocationEnabled = false,
+                    isIndoorEnabled = true,
+                    isBuildingEnabled = true
+                )
+            },
+            uiSettings = remember {
+                MapUiSettings(
+                    zoomControlsEnabled = false,
+                    zoomGesturesEnabled = false,
+                    scrollGesturesEnabled = false,
+                    rotationGesturesEnabled = false,
+                    tiltGesturesEnabled = false,
+                    myLocationButtonEnabled = false,
+                    mapToolbarEnabled = false
+                )
+            },
+            onMapClick = {
+                runCatching {
+                    val uri = "geo:$latitude,$longitude?q=$latitude,$longitude".toUri()
+                    val intent = Intent(Intent.ACTION_VIEW, uri)
+                    context.startActivity(intent)
+                }.onFailure {
+                    Log.w("NABDA_MetricsScreen", "Failed to open map", it)
+                }
+            },
+            onMapLoaded = {
+                Log.d("NABDA_MetricsScreen", "Map loaded")
+            }
         ) {
             Marker(
                 state = markerState
