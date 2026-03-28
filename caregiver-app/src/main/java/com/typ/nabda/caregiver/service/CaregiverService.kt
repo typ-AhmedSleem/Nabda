@@ -227,6 +227,7 @@ class CaregiverService : Service(), KoinComponent {
         telemetryClient = TelemetryClient(host, port)
         telemetryClient?.connect()
 
+        LocalClientRegistry.updateConnectedHostUrl("http://$host:$port")
         deviceDiscoveryManager.updateDiscoveredHost(host, port)
 
         serviceScope.launch {
@@ -250,8 +251,10 @@ class CaregiverService : Service(), KoinComponent {
                 LocalClientRegistry.status.collect { status ->
                     updateNotification(status)
                     if (status == ConnectionStatus.CONNECTED) {
+                        LocalClientRegistry.updateConnectedHostUrl("http://$host:$port")
                         deviceDiscoveryManager.updateDiscoveredHost(host, port)
                     } else if (status == ConnectionStatus.IDLE || status == ConnectionStatus.FAILED) {
+                        LocalClientRegistry.updateConnectedHostUrl(null)
                         deviceDiscoveryManager.clearDiscoveredHost()
                     }
                 }

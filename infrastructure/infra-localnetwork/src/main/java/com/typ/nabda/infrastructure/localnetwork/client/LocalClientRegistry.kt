@@ -17,6 +17,9 @@ object LocalClientRegistry {
     private val _alerts = MutableStateFlow<ActionPayload?>(null)
     val alerts: StateFlow<ActionPayload?> = _alerts.asStateFlow()
 
+    private val _connectedHostUrl = MutableStateFlow<String?>(null)
+    val connectedHostUrl: StateFlow<String?> = _connectedHostUrl.asStateFlow()
+
     fun updateStatus(newStatus: ConnectionStatus) {
         _status.value = newStatus
     }
@@ -28,5 +31,10 @@ object LocalClientRegistry {
 
     fun updateAlert(payload: ActionPayload?) {
         _alerts.value = payload
+    }
+
+    fun updateConnectedHostUrl(url: String?) {
+        _connectedHostUrl.value = url
+        Log.i("NABDA_LocalClientRegistry", "Updated connectedHostUrl: '$url'.")
     }
 }

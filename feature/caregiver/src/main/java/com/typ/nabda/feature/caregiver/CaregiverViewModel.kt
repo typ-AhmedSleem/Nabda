@@ -56,7 +56,7 @@ class CaregiverViewModel(
     val isCameraPermissionGranted = MutableStateFlow(true).asStateFlow()
     val isPhoneSilent = MutableStateFlow(false).asStateFlow()
     val pairingStatus: StateFlow<ConnectionStatus> = LocalClientRegistry.status
-    val connectedHost = discoveryManager.discoveredHost
+    val connectedHost = LocalClientRegistry.connectedHostUrl
 
     private val _lastGeocodedLocationLabel = MutableStateFlow(context.getString(R.string.location_unavailable))
     val lastGeocodedLocationLabel = _lastGeocodedLocationLabel.asStateFlow()
