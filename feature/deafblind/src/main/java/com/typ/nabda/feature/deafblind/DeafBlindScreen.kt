@@ -4,7 +4,7 @@ import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.calculatePan
@@ -90,7 +90,10 @@ fun DeafBlindScreen(
                         )
                     ) {
                         Text(
-                            modifier = Modifier.clickable { onNavigateToTests() },
+                            modifier = Modifier.combinedClickable(
+                                onClick = {},
+                                onLongClick = { onNavigateToTests() }
+                            ),
                             style = MaterialTheme.typography.headlineMedium,
                             color = MaterialTheme.colorScheme.onBackground,
                             text = stringResource(R.string.nabda),

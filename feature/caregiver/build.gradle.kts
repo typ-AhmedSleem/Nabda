@@ -47,6 +47,10 @@ dependencies {
     implementation(libs.koin.compose)
     implementation(libs.prettytime)
 
+    // Google Maps
+    implementation(libs.google.maps.compose)
+    implementation(libs.play.services.maps)
+
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

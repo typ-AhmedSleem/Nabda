@@ -26,6 +26,8 @@ data class DeviceTelemetryUiState(
     val locationLabel: String,
     val lastSeenLabel: String,
     val rawTimestamp: Long,
+    val latitude: Double? = null,
+    val longitude: Double? = null,
 )
 
 /**

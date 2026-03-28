@@ -108,5 +108,7 @@
     <string name="checking_permissions">جاري التحقق من الأذونات…</string>
     <string name="notification_permission_denied">إذن التنبيهات معطل بشكل دائم. يرجى تفعيله من الإعدادات لاستلام التنبيهات الهامة.</string>
     <string name="open_notification_settings">افتح إعدادات الإشعارات</string>
+    <string name="latitude_label">دائرة العرض</string>
+    <string name="longitude_label">خط الطول</string>
 </resources>
 

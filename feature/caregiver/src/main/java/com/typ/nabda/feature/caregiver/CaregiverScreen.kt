@@ -1,8 +1,11 @@
 package com.typ.nabda.feature.caregiver
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,7 +44,6 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -53,19 +55,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEach
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.rememberMarkerState
 import com.typ.nabda.core.model.Alert
 import com.typ.nabda.core.model.CaregiverAction
 import com.typ.nabda.core.model.ConnectivitySource
@@ -76,6 +86,7 @@ import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import org.koin.compose.viewmodel.koinViewModel
+import java.util.Locale
 
 enum class CaregiverTab {
     METRICS, ACTIONS, HISTORY
@@ -386,6 +397,52 @@ fun MetricsScreen(
                 icon = Icons.Default.LocationOn,
                 fontSize = 22.sp
             )
+            if (telemetryState?.latitude != null && telemetryState.longitude != null) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.longitude_label).uppercase(),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onBackground,
+                        )
+                        Text(
+                            text = String.format(
+                                locale = Locale.getDefault(),
+                                format = "%.5f", telemetryState.longitude
+                            ),
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.latitude_label).uppercase(),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onBackground,
+                        )
+                        Text(
+                            text = String.format(
+                                locale = Locale.getDefault(),
+                                format = "%.5f", telemetryState.latitude
+                            ),
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                }
+                Spacer(Modifier.height(4.dp))
+                TelemetryMap(
+                    latitude = telemetryState.latitude,
+                    longitude = telemetryState.longitude
+                )
+            }
         }
 
         MetricSection(title = stringResource(R.string.permissions_and_security)) {
@@ -477,6 +534,77 @@ fun MetricListItem(
                     color = MaterialTheme.colorScheme.primary,
                     lineHeight = fontSize
                 )
+            )
+        }
+    }
+}
+
+@Composable
+fun TelemetryMap(
+    latitude: Double,
+    longitude: Double,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    val location = remember(latitude, longitude) { LatLng(latitude, longitude) }
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(location, 15f)
+    }
+    val markerState = rememberMarkerState(
+        position = location
+    )
+
+    LaunchedEffect(latitude, longitude) {
+        cameraPositionState.position = CameraPosition.fromLatLngZoom(location, 15f)
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(250.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .border(
+                width = 1.dp,
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.outline,
+            )
+    ) {
+        GoogleMap(
+            modifier = Modifier.fillMaxSize(),
+            cameraPositionState = cameraPositionState,
+            properties = remember {
+                MapProperties(
+                    isMyLocationEnabled = false,
+                    isIndoorEnabled = true,
+                    isBuildingEnabled = true
+                )
+            },
+            uiSettings = remember {
+                MapUiSettings(
+                    zoomControlsEnabled = false,
+                    zoomGesturesEnabled = false,
+                    scrollGesturesEnabled = false,
+                    rotationGesturesEnabled = false,
+                    tiltGesturesEnabled = false,
+                    myLocationButtonEnabled = false,
+                    mapToolbarEnabled = false
+                )
+            },
+            onMapClick = {
+                runCatching {
+                    val uri = "geo:$latitude,$longitude?q=$latitude,$longitude".toUri()
+                    val intent = Intent(Intent.ACTION_VIEW, uri)
+                    context.startActivity(intent)
+                }.onFailure {
+                    Log.w("NABDA_MetricsScreen", "Failed to open map", it)
+                }
+            },
+            onMapLoaded = {
+                Log.d("NABDA_MetricsScreen", "Map loaded")
+            }
+        ) {
+            Marker(
+                state = markerState
             )
         }
     }
