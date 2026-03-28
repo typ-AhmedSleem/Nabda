@@ -79,7 +79,7 @@ fun DisconnectedFromServerOverlay() {
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Text(
-                    text = stringResource(R2.string.status_disconnected),
+                    text = stringResource(R2.string.status_connecting),
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Medium,
                         color = contentColor.copy(alpha = 0.9f)
