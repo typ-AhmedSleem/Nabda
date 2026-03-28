@@ -1,6 +1,8 @@
 package com.typ.nabda.feature.caregiver
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -41,7 +43,6 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -53,19 +54,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEach
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.rememberMarkerState
 import com.typ.nabda.core.model.Alert
 import com.typ.nabda.core.model.CaregiverAction
 import com.typ.nabda.core.model.ConnectivitySource
@@ -386,6 +395,13 @@ fun MetricsScreen(
                 icon = Icons.Default.LocationOn,
                 fontSize = 22.sp
             )
+            if (telemetryState?.latitude != null && telemetryState.longitude != null) {
+                Spacer(Modifier.height(8.dp))
+                TelemetryMap(
+                    latitude = telemetryState.latitude,
+                    longitude = telemetryState.longitude
+                )
+            }
         }
 
         MetricSection(title = stringResource(R.string.permissions_and_security)) {
@@ -477,6 +493,62 @@ fun MetricListItem(
                     color = MaterialTheme.colorScheme.primary,
                     lineHeight = fontSize
                 )
+            )
+        }
+    }
+}
+
+@Composable
+fun TelemetryMap(
+    latitude: Double,
+    longitude: Double,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    val location = remember(latitude, longitude) { LatLng(latitude, longitude) }
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(location, 15f)
+    }
+    val markerState = rememberMarkerState(
+        position = location
+    )
+
+    LaunchedEffect(latitude, longitude) {
+        cameraPositionState.position = CameraPosition.fromLatLngZoom(location, 15f)
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .clip(RoundedCornerShape(16.dp))
+    ) {
+        GoogleMap(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable {
+                    runCatching {
+                        val uri = "geo:$latitude,$longitude?q=$latitude,$longitude".toUri()
+                        val intent = Intent(Intent.ACTION_VIEW, uri)
+                        context.startActivity(intent)
+                    }.onFailure {
+                        Log.w("MetricsScreen", "Failed to open map", it)
+                    }
+                },
+            cameraPositionState = cameraPositionState,
+            properties = MapProperties(isMyLocationEnabled = false),
+            uiSettings = MapUiSettings(
+                zoomControlsEnabled = false,
+                zoomGesturesEnabled = false,
+                scrollGesturesEnabled = false,
+                rotationGesturesEnabled = false,
+                tiltGesturesEnabled = false,
+                myLocationButtonEnabled = false,
+                mapToolbarEnabled = false
+            )
+        ) {
+            Marker(
+                state = markerState
             )
         }
     }
