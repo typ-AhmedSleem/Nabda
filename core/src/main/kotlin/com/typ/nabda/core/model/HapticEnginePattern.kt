@@ -74,4 +74,39 @@ sealed class HapticEnginePattern(
         durations = longArrayOf(300, 50, 300, 50, 300, 50, 300)
     )
 
+    @Serializable
+    data object FoodReady : HapticEnginePattern(
+        amplitudes = intArrayOf(150, 0, 150),
+        durations = longArrayOf(150, 100, 150)
+    )
+
+    @Serializable
+    data object ComeCloser : HapticEnginePattern(
+        amplitudes = intArrayOf(100, 0, 150, 0, 200),
+        durations = longArrayOf(100, 100, 150, 100, 200)
+    )
+
+    @Serializable
+    data object SleepTime : HapticEnginePattern(
+        amplitudes = intArrayOf(80, 0, 80, 0, 80),
+        durations = longArrayOf(300, 200, 300, 200, 300)
+    )
+
+    @Serializable
+    data object AreYouSick : HapticEnginePattern(
+        amplitudes = intArrayOf(200, 0, 200),
+        durations = longArrayOf(400, 100, 400)
+    )
+
+    @Serializable
+    data object DoWantThis : HapticEnginePattern(
+        amplitudes = intArrayOf(150, 0, 150, 0, 150),
+        durations = longArrayOf(100, 50, 100, 50, 100)
+    )
+
+    @Serializable
+    data object ImComing : HapticEnginePattern(
+        amplitudes = intArrayOf(255, 0, 150),
+        durations = longArrayOf(100, 100, 400)
+    )
 }
