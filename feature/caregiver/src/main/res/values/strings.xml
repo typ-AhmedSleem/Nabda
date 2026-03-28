@@ -108,5 +108,7 @@
     <string name="checking_permissions">Checking for permissions…</string>
     <string name="notification_permission_denied">Notification permission is permanently denied. Please enable it in settings to receive life-saving alerts.</string>
     <string name="open_notification_settings">Open Notification Settings</string>
+    <string name="latitude_label">Latitude</string>
+    <string name="longitude_label">Longitude</string>
 </resources>
 

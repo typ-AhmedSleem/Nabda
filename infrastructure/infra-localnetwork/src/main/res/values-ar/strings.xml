@@ -9,5 +9,5 @@
     <string name="status_reconnecting">جاري إعادة الاتصال…</string>
     <string name="status_failed">فشل الاتصال</string>
     <string name="status_wifi_disabled">الواي فاي معطل</string>
-    <string name="desc_status_disconnected">تطبيق مساعد نبضه تقريباً غير متصل بالشبكة أو فقدت الاتصال.\n بنحاول نتصل من جديد…</string>
+    <string name="desc_status_disconnected">بيتم الاتصال بجهاز مساعد نبضة أو بحاول استعيد الاتصال لو اتقطع…</string>
 </resources>
