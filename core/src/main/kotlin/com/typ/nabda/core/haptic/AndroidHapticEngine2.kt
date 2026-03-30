@@ -1,6 +1,7 @@
 package com.typ.nabda.core.haptic
 
 import android.content.Context
+import android.media.AudioAttributes
 import android.os.Build
 import android.os.VibrationAttributes
 import android.os.VibrationEffect
@@ -21,6 +22,9 @@ class AndroidHapticEngine2(private val context: Context) : HapticEngine {
     private val vibrator: Vibrator by lazy {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vibratorManager.vibratorIds.also {
+                Log.i(TAG, "Available vibrator ids: ${it.contentToString()}")
+            }
             vibratorManager.defaultVibrator
         } else {
             @Suppress("DEPRECATION")
@@ -56,11 +60,16 @@ class AndroidHapticEngine2(private val context: Context) : HapticEngine {
             // 4. Use attributes to ensure correct delivery priority
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 val attributes = VibrationAttributes.Builder()
-                    .setUsage(VibrationAttributes.USAGE_NOTIFICATION)
+                    .setUsage(VibrationAttributes.USAGE_ALARM)
                     .build()
                 vibrator.vibrate(effect, attributes)
             } else {
-                vibrator.vibrate(effect)
+                // API 26 to 32 (Legacy attributes mapping)
+                val audioAttributes = AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                    .build()
+                vibrator.vibrate(effect, audioAttributes)
             }
 
             Log.d(TAG, "Performed haptic: ${pattern.javaClass.simpleName}")
