@@ -18,9 +18,8 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.typ.nabda.core.haptic.HapticEngine
-import com.typ.nabda.core.model.CaregiverAction
-import com.typ.nabda.core.model.HapticEnginePattern
 import com.typ.nabda.deaf.MainActivity
+import com.typ.nabda.deaf.helpers.HapticPatternRetriever
 import com.typ.nabda.deafblind.R
 import com.typ.nabda.feature.deafblind.localserver.TelemetryCollector
 import com.typ.nabda.infrastructure.localnetwork.LocalNetworkConstants
@@ -30,11 +29,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -57,20 +53,6 @@ class ServerService : Service() {
     private lateinit var telemetryCollector: TelemetryCollector
 
     private val hapticEngine: HapticEngine by inject()
-
-    private val actionHapticMap = mapOf(
-        CaregiverAction.FOOD_READY.name to HapticEnginePattern.FoodReady,
-        CaregiverAction.COME_CLOSER.name to HapticEnginePattern.ComeCloser,
-        CaregiverAction.SLEEP_TIME.name to HapticEnginePattern.SleepTime,
-        CaregiverAction.ARE_YOU_SICK.name to HapticEnginePattern.AreYouSick,
-        CaregiverAction.DO_WANT_THIS.name to HapticEnginePattern.DoWantThis,
-        CaregiverAction.IM_COMING.name to HapticEnginePattern.ImComing,
-        CaregiverAction.HELP_REQUEST.name to HapticEnginePattern.AssistanceRequest,
-        CaregiverAction.FALL.name to HapticEnginePattern.EmergencyRequest,
-    )
-
-    private val _acks = MutableSharedFlow<String>(extraBufferCapacity = 5)
-    val acks: SharedFlow<String> = _acks.asSharedFlow()
 
     companion object {
         private const val CHANNEL_ID = "nabda_server_channel"
@@ -218,11 +200,8 @@ class ServerService : Service() {
                 updateNotification(count)
             },
             onActionReceived = { actionId ->
-                serviceScope.launch {
-                    val pattern = actionHapticMap[actionId] ?: HapticEnginePattern.NormalRequest
-                    hapticEngine.performHaptic(pattern)
-                    _acks.emit(actionId)
-                }
+                hapticEngine.performHaptic(HapticPatternRetriever.retrievePatternForAction(actionId))
+                LocalServerRegistry.emitAckForCaregiverAction(actionId)
             }
         )
         this.ktorServer = server
