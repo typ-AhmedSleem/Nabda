@@ -24,11 +24,7 @@ class NabdaLocationManager(private val context: Context) {
     private val locationSettings = LocationServices.getSettingsClient(context)
     private val locationManager = LocationServices.getFusedLocationProviderClient(context)
 
-    private var lastKnownLocation: LocationSnapshot? = LocationSnapshot(
-        latitude = 30.0444,
-        longitude = 31.2357,
-        accuracyMeters = 50f
-    )
+    private var lastKnownLocation: LocationSnapshot? = null
     private var lastKnownLocationRetrieveTime = 0L
 
     @SuppressLint("MissingPermission")
