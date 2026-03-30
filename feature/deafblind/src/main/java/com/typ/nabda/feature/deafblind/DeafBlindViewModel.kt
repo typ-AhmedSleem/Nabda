@@ -9,6 +9,7 @@ import com.typ.nabda.core.dispatcher.SignalDispatcher
 import com.typ.nabda.core.gestures.GestureClassifier
 import com.typ.nabda.core.haptic.HapticEngine
 import com.typ.nabda.core.messaging.IncomingActionDispatcher
+import com.typ.nabda.core.model.CaregiverAction
 import com.typ.nabda.core.model.GestureInput
 import com.typ.nabda.core.model.GestureType
 import com.typ.nabda.core.model.HapticEnginePattern
@@ -49,6 +50,23 @@ class DeafBlindViewModel(
             LocalServerRegistry.connectedClientsCount.collect { count ->
                 _uiState.update { it.copy(connectedClientsCount = count) }
             }
+        }
+
+        viewModelScope.launch {
+            LocalServerRegistry
+                .acks
+                .collect { actionId ->
+                    CaregiverAction
+                        .entries
+                        .find { it.name == actionId }
+                        ?.let { action ->
+                            _uiState.update { state ->
+                                state.copy(
+                                    feedbackMessage = UiText.StringResource(action.nameResId),
+                                )
+                            }
+                        }
+                }
         }
     }
 
