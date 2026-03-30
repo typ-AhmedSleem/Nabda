@@ -174,6 +174,7 @@ class CaregiverViewModel(
                     Log.w("NABDA_CaregiverViewModel", "No local device found for direct action")
                 }
             } catch (e: Exception) {
+                showToast(context.getString(R.string.action_not_sent))
                 Log.e("NABDA_CaregiverViewModel", "Failed to send local action", e)
             }
         }
