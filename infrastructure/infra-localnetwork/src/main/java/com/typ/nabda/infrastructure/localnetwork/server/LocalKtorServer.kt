@@ -106,7 +106,6 @@ class LocalKtorServer(
                     val correlationId = Uuid.random().toString()
                     try {
                         val actionPayload = call.receive<CaregiverActionPayload>()
-                        onActionReceived(actionPayload.actionId)
                         call.respond(
                             status = HttpStatusCode.OK,
                             message = ActionAckPayload(
@@ -115,6 +114,7 @@ class LocalKtorServer(
                                 message = "Received '${actionPayload.actionId}' successfully."
                             )
                         )
+                        onActionReceived(actionPayload.actionId)
                         Log.d(TAG_SERVER, "Received /action request for ${actionPayload.actionId} and responded with ACK.")
                     } catch (e: Exception) {
                         Log.w(TAG_SERVER, "Bad request on /action", e)
