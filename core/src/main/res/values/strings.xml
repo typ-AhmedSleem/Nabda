@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_food_ready">Food is ready</string>
+    <string name="action_come_closer">Come closer</string>
+    <string name="action_sleep_time">Sleep time</string>
+    <string name="action_are_you_sick">Are you sick?</string>
+    <string name="action_do_want_this">Do you want this?</string>
+    <string name="action_im_coming">I\'m coming</string>
+    <string name="action_help_request">Help Requested</string>
+    <string name="action_fall_detected">Fall Detected</string>
+</resources>

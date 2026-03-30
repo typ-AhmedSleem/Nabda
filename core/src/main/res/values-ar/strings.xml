@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_food_ready">الأكل جاهز</string>
+    <string name="action_come_closer">تعالى هنا</string>
+    <string name="action_sleep_time">جه وقت النوم</string>
+    <string name="action_are_you_sick">أنت تعبان؟</string>
+    <string name="action_do_want_this">عايز دي؟</string>
+    <string name="action_im_coming">أنا جاي</string>
+    <string name="action_help_request">طلب مساعدة</string>
+    <string name="action_fall_detected">وقع على الأرض</string>
+</resources>
