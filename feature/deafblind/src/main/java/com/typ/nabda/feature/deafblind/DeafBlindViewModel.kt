@@ -93,7 +93,6 @@ class DeafBlindViewModel(
     }
 
     private fun initiateAction(input: GestureInput) {
-        hapticEngine.performHaptic(HapticEnginePattern.NormalRequest)
         val gesture = mapInputToGesture(input)
         val action = RequestedActionMapper.getActionForGesture(gesture)
 

@@ -22,9 +22,6 @@ class AndroidHapticEngine2(private val context: Context) : HapticEngine {
     private val vibrator: Vibrator by lazy {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-            vibratorManager.vibratorIds.also {
-                Log.i(TAG, "Available vibrator ids: ${it.contentToString()}")
-            }
             vibratorManager.defaultVibrator
         } else {
             @Suppress("DEPRECATION")
@@ -33,41 +30,44 @@ class AndroidHapticEngine2(private val context: Context) : HapticEngine {
     }
 
     override fun performHaptic(pattern: HapticEnginePattern) {
-        // 1. Early exit if no hardware available
         if (!vibrator.hasVibrator()) {
             Log.w(TAG, "No vibrator available on this device.")
             return
         }
 
-        // 2. Validate pattern consistency
         if (pattern.durations.isEmpty() || pattern.durations.size != pattern.amplitudes.size) {
             Log.e(TAG, "Invalid haptic pattern: size mismatch or empty arrays.")
             return
         }
 
         try {
-            // 3. Cancel existing and prepare new effect
-            vibrator.cancel()
+            // Note: We removed vibrator.cancel() to prevent killing patterns that are 
+            // triggered in rapid succession.
 
-            // createWaveform works on all devices (API 26+).
-            // Devices without amplitude control automatically fallback to default strength.
+            // Sanitize amplitudes if device doesn't support variable intensity
+            val finalAmplitudes = if (vibrator.hasAmplitudeControl()) {
+                pattern.amplitudes
+            } else {
+                pattern.amplitudes.map { if (it > 0) 255 else 0 }.toIntArray()
+            }
+
             val effect = VibrationEffect.createWaveform(
                 pattern.durations,
-                pattern.amplitudes,
+                finalAmplitudes,
                 pattern.repeats
             )
 
-            // 4. Use attributes to ensure correct delivery priority
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 val attributes = VibrationAttributes.Builder()
-                    .setUsage(VibrationAttributes.USAGE_ALARM)
+                    .setUsage(VibrationAttributes.USAGE_COMMUNICATION_REQUEST)
+                    .setFlags(VibrationAttributes.FLAG_BYPASS_INTERRUPTION_POLICY, VibrationAttributes.FLAG_BYPASS_INTERRUPTION_POLICY)
                     .build()
                 vibrator.vibrate(effect, attributes)
             } else {
-                // API 26 to 32 (Legacy attributes mapping)
+                @Suppress("DEPRECATION")
                 val audioAttributes = AudioAttributes.Builder()
                     .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                    .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
                     .build()
                 vibrator.vibrate(effect, audioAttributes)
             }
@@ -78,4 +78,3 @@ class AndroidHapticEngine2(private val context: Context) : HapticEngine {
         }
     }
 }
-
