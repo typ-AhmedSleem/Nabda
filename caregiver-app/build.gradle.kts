@@ -15,8 +15,8 @@ android {
         applicationId = "com.typ.nabda.caregiver"
         minSdk = 29
         targetSdk = 36
-        versionCode = 3
-        versionName = "1.2"
+        versionCode = 4
+        versionName = "1.3"
 
         // Load Google Maps API Key from local.properties
         val properties = Properties()
