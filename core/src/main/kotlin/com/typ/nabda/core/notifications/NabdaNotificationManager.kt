@@ -3,6 +3,7 @@ package com.typ.nabda.core.notifications
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.media.RingtoneManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.typ.nabda.core.model.ActionPriority
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 
 interface NabdaNotificationManager {
     fun showActionNotification(actionId: String, actionName: String, priority: String)
+    fun showDisconnectionNotification(title: String, message: String)
     val alertHistory: StateFlow<List<Alert>>
 }
 
@@ -28,6 +30,7 @@ class NabdaNotificationManagerImpl(
     companion object {
         private const val CHANNEL_ID_HIGH = "nabda_urgent"
         private const val CHANNEL_ID_NORMAL = "nabda_normal"
+        private const val CHANNEL_ID_DISCONNECTION = "nabda_disconnection"
     }
 
     init {
@@ -53,7 +56,17 @@ class NabdaNotificationManagerImpl(
                 description = "Notifications for routine requests"
             }
 
-            notificationManager.createNotificationChannels(listOf(highChannel, normalChannel))
+            val disconnectionChannel = NotificationChannel(
+                CHANNEL_ID_DISCONNECTION,
+                "Device Disconnection",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Critical alerts when the assistant device disconnects"
+                enableVibration(true)
+                setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM), null)
+            }
+
+            notificationManager.createNotificationChannels(listOf(highChannel, normalChannel, disconnectionChannel))
         }
     }
 
@@ -83,5 +96,17 @@ class NabdaNotificationManagerImpl(
         // TODO: Add PendingIntent to open Activity
 
         notificationManager.notify(System.currentTimeMillis().toInt(), builder.build())
+    }
+
+    override fun showDisconnectionNotification(title: String, message: String) {
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID_DISCONNECTION)
+            .setSmallIcon(android.R.drawable.ic_dialog_alert)
+            .setContentTitle(title)
+            .setContentText(message)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM))
+            .setAutoCancel(true)
+
+        notificationManager.notify(1001, builder.build())
     }
 }

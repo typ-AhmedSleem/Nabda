@@ -29,4 +29,7 @@ object LocalNetworkConstants {
     const val HEARTBEAT_BACKOFF_MS = 15_000L
     const val MAX_CONSECUTIVE_FAILURES = 3
     const val TELEMETRY_DELAY = 1000L
+
+    /** Notification IDs */
+    const val NOTIFICATION_ID_DISCONNECT = 1001
 }
