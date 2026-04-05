@@ -109,7 +109,7 @@ class DeafBlindViewModel(
 
             jobActionConfirmation?.cancel()
             jobActionConfirmation = viewModelScope.launch {
-                delay(5000) // 5 seconds to confirm
+                delay(8000) // 5 seconds to confirm
                 cancelPendingAction(UiText.StringResource(R.string.timed_out))
             }
         }
