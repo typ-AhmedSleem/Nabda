@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,12 +32,26 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.typ.nabda.core.haptic.HapticEngine
+import com.typ.nabda.core.model.HapticEnginePattern
 import com.typ.nabda.designsystem.theme.NabdaTheme
+import kotlinx.coroutines.delay
+import org.koin.compose.koinInject
 import com.typ.nabda.infrastructure.localnetwork.R as R2
 
 @Composable
-fun DisconnectedFromServerOverlay() {
+fun DisconnectedFromServerOverlay(
+    hapticEngine: HapticEngine = koinInject(),
+) {
     var isVisible by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        delay(3000)
+        repeat(10) {
+            hapticEngine.performHaptic(HapticEnginePattern.NotConnected)
+            delay(2000)
+        }
+    }
 
     if (isVisible) {
         val containerColor = MaterialTheme.colorScheme.secondaryContainer
