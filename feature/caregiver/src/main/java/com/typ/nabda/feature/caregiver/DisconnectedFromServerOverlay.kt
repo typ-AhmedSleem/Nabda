@@ -46,10 +46,10 @@ fun DisconnectedFromServerOverlay(
     var isVisible by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
-        delay(3000)
+        delay(5000)
         repeat(10) {
             hapticEngine.performHaptic(HapticEnginePattern.NotConnected)
-            delay(2000)
+            delay(1000)
         }
     }
 
