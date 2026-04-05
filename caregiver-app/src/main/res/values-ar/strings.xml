@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">مرافق نبضة</string>
+    <string name="app_name">نبضة (مرافق)</string>
     <string name="brand_name">نبضة</string>
     <string name="choose_your_role">اختار\nدورك</string>
     <string name="select_interface_to_begin">اختار دورك عشان تبدأ</string>
