@@ -64,6 +64,33 @@ class CaregiverService : Service(), KoinComponent {
 
         acquireMulticastLock()
         registerNetworkCallback()
+        startStatusMonitoring()
+    }
+
+    private fun startStatusMonitoring() {
+        serviceScope.launch {
+            var lastStatus: ConnectionStatus? = null
+            LocalClientRegistry.status.collect { status ->
+                updateNotification(status)
+
+                // Push disconnection notification
+                if ((lastStatus ?: ConnectionStatus.DISCONNECTED) <= ConnectionStatus.CONNECTED
+                    && (status == ConnectionStatus.DISCONNECTED || status == ConnectionStatus.FAILED)
+                ) {
+                    notificationManager.showDisconnectionNotification(
+                        title = getString(com.typ.nabda.feature.caregiver.R.string.nabda_caregiver),
+                        message = getString(com.typ.nabda.feature.caregiver.R.string.connection_lost)
+                    )
+                }
+                lastStatus = status
+
+                // Handle registry updates based on status
+                if (status == ConnectionStatus.IDLE || status == ConnectionStatus.FAILED) {
+                    LocalClientRegistry.updateConnectedHostUrl(null)
+                    deviceDiscoveryManager.clearDiscoveredHost()
+                }
+            }
+        }
     }
 
     private fun acquireMulticastLock() {
@@ -246,16 +273,12 @@ class CaregiverService : Service(), KoinComponent {
                     )
                 }
             }
-            // Observation of status is now handled reactive by TelemetryClient updating LocalClientRegistry.status
+            // Observation of status is now handled reactive by startStatusMonitoring()
             launch {
                 LocalClientRegistry.status.collect { status ->
-                    updateNotification(status)
                     if (status == ConnectionStatus.CONNECTED) {
                         LocalClientRegistry.updateConnectedHostUrl("http://$host:$port")
                         deviceDiscoveryManager.updateDiscoveredHost(host, port)
-                    } else if (status == ConnectionStatus.IDLE || status == ConnectionStatus.FAILED) {
-                        LocalClientRegistry.updateConnectedHostUrl(null)
-                        deviceDiscoveryManager.clearDiscoveredHost()
                     }
                 }
             }
