@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 interface NabdaNotificationManager {
     fun showActionNotification(actionId: String, actionName: String, priority: String)
     fun showDisconnectionNotification(title: String, message: String)
+    fun dismissDisconnectionNotification()
     val alertHistory: StateFlow<List<Alert>>
 }
 
@@ -108,5 +109,9 @@ class NabdaNotificationManagerImpl(
             .setAutoCancel(true)
 
         notificationManager.notify(1001, builder.build())
+    }
+
+    override fun dismissDisconnectionNotification() {
+        notificationManager.cancel(1001)
     }
 }

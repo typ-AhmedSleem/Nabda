@@ -73,10 +73,13 @@ class CaregiverService : Service(), KoinComponent {
             LocalClientRegistry.status.collect { status ->
                 updateNotification(status)
 
-                // Push disconnection notification
-                if ((lastStatus ?: ConnectionStatus.DISCONNECTED) <= ConnectionStatus.CONNECTED
-                    && (status == ConnectionStatus.DISCONNECTED || status == ConnectionStatus.FAILED)
-                ) {
+                // Dismiss notification if connected
+                if (status == ConnectionStatus.CONNECTED) {
+                    notificationManager.dismissDisconnectionNotification()
+                }
+
+                // Push disconnection notification only once when connection is lost
+                if (lastStatus == ConnectionStatus.CONNECTED && (status == ConnectionStatus.DISCONNECTED || status == ConnectionStatus.FAILED)) {
                     notificationManager.showDisconnectionNotification(
                         title = getString(com.typ.nabda.feature.caregiver.R.string.nabda_caregiver),
                         message = getString(com.typ.nabda.feature.caregiver.R.string.connection_lost)
